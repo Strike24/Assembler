@@ -36,7 +36,6 @@ int pre_assembler(char *filename)
 int macro_expansion(FILE *input_file, FILE *output_file)
 {
     MacroNode *head = init_macro_table();
-    Macro *temp;
     char line[MAX_LINE];
     char line_copy[MAX_LINE];
     char *word;
@@ -58,9 +57,9 @@ int macro_expansion(FILE *input_file, FILE *output_file)
 
         if (!in_macro_creation)
         {
-            if ((temp = find_macro(head, word)) != NULL)
+            if ((current_macro = find_macro(head, word)) != NULL)
             {
-                fprintf(output_file, "%s", temp->content);
+                fprintf(output_file, "%s", current_macro->content);
             }
             else if (strcmp(word, "mcro") == 0)
             {
