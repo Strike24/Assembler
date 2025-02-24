@@ -1,0 +1,12 @@
+{
+    "files.associations": {
+        "preasm.h": "c",
+        "stdlib.h": "c",
+        "functions.h": "c",
+        "stdio.h": "c",
+        "assembler.h": "c",
+        "string.h": "c",
+        "macrofunctions.h": "c",
+        "filefunctions.h": "c"
+    }
+}

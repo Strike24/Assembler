@@ -1,0 +1,30 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug C Executable in WSL",
+            "type": "cppdbg", // Use cppdbg even for C
+            "request": "launch",
+            "program": "${workspaceFolder}/assembler", // Path to your compiled C executable
+            "args": [
+                "test"
+            ], // Arguments for your executable, if needed
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+            "miDebuggerPath": "/usr/bin/gdb",
+            "preLaunchTask": "",
+            "postDebugTask": "",
+            "sourceFileMap": {}
+        }
+    ]
+}
