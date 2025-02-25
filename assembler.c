@@ -1,5 +1,4 @@
 #include "assembler.h"
-#include "preasm.h"
 
 int main(int argc, char *argv[])
 {
@@ -17,7 +16,13 @@ int main(int argc, char *argv[])
             printf("Error: pre assmebler failed\n");
             return 1;
         }
+
+        if (first_pass(argv[i]) == ERROR)
+        {
+            printf("Error: assembler failed\n");
+            return 1;
         }
+    }
 
     return 0;
 }
