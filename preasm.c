@@ -8,7 +8,7 @@ int pre_assembler(char *filename)
     if (input_file == NULL)
     {
         printf("Error: File not found\n");
-        return 1;
+        return ERROR;
     }
 
     replace_extension(filename, ".am");
@@ -17,7 +17,7 @@ int pre_assembler(char *filename)
     {
         printf("Error: File not found\n");
         fclose(input_file);
-        return 1;
+        return ERROR;
     }
 
     if (macro_expansion(input_file, output_file) == 1)
@@ -25,7 +25,7 @@ int pre_assembler(char *filename)
         printf("Error: Macro expansion failed\n");
         fclose(input_file);
         fclose(output_file);
-        return 1;
+        return ERROR;
     }
 
     fclose(input_file);
@@ -41,7 +41,7 @@ int macro_expansion(FILE *input_file, FILE *output_file)
     char *word;
     int in_macro_creation = 0;
     Macro *current_macro;
-    char *temp_name;
+    char macro_content_buffer[MAX_LINE * 100];
 
     while (fgets(line, MAX_LINE, input_file))
     {
@@ -57,21 +57,23 @@ int macro_expansion(FILE *input_file, FILE *output_file)
 
         if (!in_macro_creation)
         {
-            if ((current_macro = find_macro(head, word)) != NULL)
+            current_macro = find_macro(head, word);
+            if (current_macro != NULL)
             {
                 fprintf(output_file, "%s", current_macro->content);
             }
             else if (strcmp(word, "mcro") == 0)
             {
-                in_macro_creation = 1;
-                temp_name = strtok(NULL, " \n\t");
-                if (is_valid_macro_name(temp_name) == 0)
+                in_macro_creation = TRUE;
+                /* Move file pointer to next word in the line */
+                word = strtok(NULL, " \n\t");
+                if (is_valid_macro_name(word) == 0)
                 {
                     printf("Error: Macro name missing / invalid.\nMacro names can't be type of a label.\n");
-                    return 1;
+                    return ERROR;
                 }
 
-                add_macro(head, temp_name);
+                add_macro(head, word);
             }
             else
             {
@@ -84,12 +86,18 @@ int macro_expansion(FILE *input_file, FILE *output_file)
             if (!current_macro)
             {
                 printf("Error: No macro found while adding content.\n");
-                return 1;
+                return ERROR;
             }
 
             if (strcmp(word, "mcroend") == 0)
             {
-                in_macro_creation = 0;
+                in_macro_creation = FALSE;
+                /*
+                char *temp = (char *)malloc(strlen(current_macro->content) + 1);
+                strcpy(temp, current_macro->content);
+                free(current_macro->content);
+                current_macro->content = temp;
+                */
             }
             else
             {

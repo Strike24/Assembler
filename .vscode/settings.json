@@ -7,6 +7,9 @@
         "assembler.h": "c",
         "string.h": "c",
         "macrofunctions.h": "c",
-        "filefunctions.h": "c"
+        "filefunctions.h": "c",
+        "typeinfo": "c",
+        "limits": "c",
+        "*.tcc": "c"
     }
 }

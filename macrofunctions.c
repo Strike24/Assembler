@@ -1,4 +1,5 @@
 #include "macrofunctions.h"
+
 MacroNode *init_macro_table()
 {
     MacroNode *head = (MacroNode *)malloc(sizeof(MacroNode));
@@ -7,12 +8,28 @@ MacroNode *init_macro_table()
     return head;
 }
 
+int add_content_to_macro(MacroNode *macro_node, char *content, int len)
+{
+    macro_node->macro->content = (char *)malloc(len + 1);
+    /*
+    if (!newMacro->content)
+    {
+        free(newMacro->name);
+        free(newMacro);
+        return ERROR;
+    }
+        */
+
+    strcpy(macro_node->macro->content, content);
+    return 0;
+}
+
 int add_macro(MacroNode *head, char *name)
 {
     Macro *newMacro = (Macro *)malloc(sizeof(Macro));
     MacroNode *newNode = (MacroNode *)malloc(sizeof(MacroNode));
-    if (!newMacro)
-        return 0;
+    if (!newMacro || !newNode)
+        return ERROR;
     newMacro->name = (char *)malloc(strlen(name) + 1);
     strcpy(newMacro->name, name);
     newMacro->content = (char *)malloc(MAX_LINE * 100 * sizeof(char));
@@ -20,7 +37,7 @@ int add_macro(MacroNode *head, char *name)
     {
         free(newMacro->name);
         free(newMacro);
-        return 0;
+        return ERROR;
     }
     newMacro->content[0] = '\0';
 
