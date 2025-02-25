@@ -20,7 +20,7 @@ int pre_assembler(char *filename)
         return ERROR;
     }
 
-    if (macro_expansion(input_file, output_file) == 1)
+    if (macro_expansion(input_file, output_file) == ERROR)
     {
         printf("Error: Macro expansion failed\n");
         fclose(input_file);
