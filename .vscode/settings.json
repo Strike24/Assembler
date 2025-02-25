@@ -10,6 +10,8 @@
         "filefunctions.h": "c",
         "typeinfo": "c",
         "limits": "c",
-        "*.tcc": "c"
+        "*.tcc": "c",
+        "firstpass.h": "c",
+        "defs.h": "c"
     }
 }

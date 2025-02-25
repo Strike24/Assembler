@@ -3,6 +3,11 @@
 MacroNode *init_macro_table()
 {
     MacroNode *head = (MacroNode *)malloc(sizeof(MacroNode));
+    if (!head)
+    {
+        free(head);
+        return NULL;
+    }
     head->macro = NULL;
     head->next = NULL;
     return head;
@@ -11,6 +16,12 @@ MacroNode *init_macro_table()
 int add_content_to_macro(MacroNode *macro_node, char *content, int len)
 {
     macro_node->macro->content = (char *)malloc(len + 1);
+    if (!macro_node->macro->content)
+    {
+        free(macro_node->macro->name);
+        free(macro_node->macro);
+        return ERROR;
+    }
     /*
     if (!newMacro->content)
     {
@@ -90,17 +101,6 @@ Macro *get_current_macro(MacroNode *head)
         temp = temp->next;
     }
     return temp->macro;
-}
-
-int is_valid_macro_name(char *name)
-{
-    if (name == NULL)
-        return 0;
-
-    if (*name == '\0')
-        return 0;
-
-    return 1;
 }
 
 /*DEBUG REMOVE BEFORE PUBLISHING*/

@@ -65,7 +65,7 @@ int macro_expansion(FILE *input_file, FILE *output_file)
             else if (strcmp(word, "mcro") == 0)
             {
                 in_macro_creation = TRUE;
-                /* Move file pointer to next word in the line */
+                /* Move word pointer to next word in the line */
                 word = strtok(NULL, " \n\t");
                 if (is_valid_macro_name(word) == 0)
                 {
