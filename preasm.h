@@ -3,8 +3,7 @@
 #include <string.h>
 #include "filefunctions.h"
 #include "macrofunctions.h"
-
-#define MAX_LINE 256
+#include "defs.h"
 
 int pre_assembler(char *filename);
 

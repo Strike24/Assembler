@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#define MAX_LINE 256
+#include "defs.h"
 
 typedef struct
 {
@@ -28,3 +28,6 @@ Macro *get_current_macro(MacroNode *head);
 /* Checks if a macro name is valid, returns 1 if valid else 0 */
 int is_valid_macro_name(char *name);
 void print_macro_table(MacroNode *head);
+
+int add_macro2(MacroNode *head, char *name, char *content, int len);
+void get_macro_content(char *macro_content, int len);
