@@ -3,20 +3,12 @@
 int pre_assembler(char *filename)
 {
     FILE *input_file, *output_file;
-    add_extension(filename, ".as");
-    input_file = fopen(filename, "r");
-    if (input_file == NULL)
-    {
-        printf("Error: File not found\n");
-        return ERROR;
-    }
 
-    replace_extension(filename, ".am");
-    output_file = fopen(filename, "w");
-    if (output_file == NULL)
+    input_file = open_file(filename, "r", ".as");
+    output_file = open_file(filename, "w", ".am");
+
+    if (input_file == NULL || output_file == NULL)
     {
-        printf("Error: File not found\n");
-        fclose(input_file);
         return ERROR;
     }
 
@@ -41,7 +33,7 @@ int macro_expansion(FILE *input_file, FILE *output_file)
     char *word;
     int in_macro_creation = 0;
     Macro *current_macro;
-    char macro_content_buffer[MAX_LINE * 100];
+    /*char macro_content_buffer[MAX_LINE * 100]; = {0};*/
 
     while (fgets(line, MAX_LINE, input_file))
     {
@@ -67,7 +59,7 @@ int macro_expansion(FILE *input_file, FILE *output_file)
                 in_macro_creation = TRUE;
                 /* Move word pointer to next word in the line */
                 word = strtok(NULL, " \n\t");
-                if (is_valid_macro_name(word) == 0)
+                if (word == NULL)
                 {
                     printf("Error: Macro name missing / invalid.\nMacro names can't be type of a label.\n");
                     return ERROR;

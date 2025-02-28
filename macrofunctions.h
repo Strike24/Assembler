@@ -26,3 +26,5 @@ Macro *find_macro(MacroNode *head, char *name);
 Macro *get_current_macro(MacroNode *head);
 
 void print_macro_table(MacroNode *head);
+
+int is_macro(char *word);

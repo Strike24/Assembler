@@ -4,5 +4,6 @@
 
 void add_extension(char *filename, char *extension);
 
-int check_extension(char *filename);
+int check_extension(char *filename, char *extension);
 void replace_extension(char *filename, char *extension);
+FILE *open_file(char *filename, char *mode, char *ext);

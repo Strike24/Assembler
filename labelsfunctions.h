@@ -11,16 +11,16 @@ typedef enum
     ENTRY
 } LabelType;
 
-typedef struct
+typedef struct Label
 {
     char *name;
     int address;
     LabelType type;
-    Label *next;
+    struct Label *next;
 } Label;
 
 Label *init_label_table();
-Label *find_label(Label *head, int address);
+Label *find_label(Label *head, char *name);
 
 int add_label(Label *head, char *name, int address, LabelType type);
 void free_label_table(Label *head);

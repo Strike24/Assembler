@@ -12,12 +12,12 @@ Label *init_label_table()
     return head;
 }
 
-Label *find_label(Label *head, int address)
+Label *find_label(Label *head, char *name)
 {
     Label *temp = head;
     while (temp != NULL)
     {
-        if (temp->address == address)
+        if (strcmp(temp->name, name) == 0)
             return temp;
         temp = temp->next;
     }
@@ -26,7 +26,13 @@ Label *find_label(Label *head, int address)
 
 int add_label(Label *head, char *name, int address, LabelType type)
 {
-    Label *newLabel = (Label *)malloc(sizeof(Label));
+    Label *newLabel;
+    if (find_label(head, name) != NULL)
+    {
+        return ERROR;
+    }
+
+    newLabel = (Label *)malloc(sizeof(Label));
     if (!newLabel)
     {
         return ERROR;
