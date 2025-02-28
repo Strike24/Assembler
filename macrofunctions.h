@@ -1,3 +1,5 @@
+#ifndef MACROFUNCTIONS_H
+#define MACROFUNCTIONS_H
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -28,3 +30,5 @@ Macro *get_current_macro(MacroNode *head);
 void print_macro_table(MacroNode *head);
 
 int is_macro(char *word);
+
+#endif

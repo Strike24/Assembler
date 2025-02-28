@@ -1,3 +1,6 @@
+#ifndef FIRSTPASS_H
+#define FIRSTPASS_H
+
 #include "defs.h"
 #include "filefunctions.h"
 #include "labelsfunctions.h"
@@ -31,3 +34,5 @@ int validate_data(char *word);
 int validate_extern(char *word);
 int validate_entry(char *word);
 int validate_code(char *word);
+
+#endif

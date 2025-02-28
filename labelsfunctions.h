@@ -1,3 +1,6 @@
+#ifndef LABELSFUNCTIONS_H
+#define LABELSFUNCTIONS_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -24,3 +27,5 @@ Label *find_label(Label *head, char *name);
 
 int add_label(Label *head, char *name, int address, LabelType type);
 void free_label_table(Label *head);
+
+#endif

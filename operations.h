@@ -1,3 +1,6 @@
+#ifndef OPERATIONS_H
+#define OPERATIONS_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -26,3 +29,5 @@ typedef struct
 int is_operation_name(char *name);
 /* check if a string is one of the register names */
 int is_register_name(char *name);
+
+#endif
