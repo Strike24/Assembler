@@ -6,3 +6,4 @@
 #define MAX_LINE 256
 #define PRE_MACRO_EXT ".as"
 #define POST_MACRO_EXT ".am"
+#define BASE_10 10

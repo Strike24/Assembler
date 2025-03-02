@@ -45,3 +45,23 @@ int is_register_name(char *name)
     }
     return FALSE;
 }
+
+OperandType *get_allowed_addressing_methods(char *name, int source_or_target)
+{
+    int i;
+    for (i = 0; i < NUM_OF_OPERATIONS; i++)
+    {
+        if (strcmp(OPERATIONS[i].name, name) == 0)
+        {
+            if (source_or_target == SOURCE)
+            {
+                return OPERATIONS[i].allowed_source;
+            }
+            else if (source_or_target == TARGET)
+            {
+                return OPERATIONS[i].allowed_target;
+            }
+        }
+    }
+    return NULL;
+}

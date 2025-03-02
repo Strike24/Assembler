@@ -4,6 +4,7 @@
 #include "filefunctions.h"
 #include "macrofunctions.h"
 #include "defs.h"
+#include "firstpass.h"
 
 int pre_assembler(char *filename);
 
