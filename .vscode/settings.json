@@ -15,6 +15,7 @@
         "defs.h": "c",
         "labelsfunctions.h": "c",
         "operations.h": "c",
-        "ctype.h": "c"
+        "ctype.h": "c",
+        "reservedwords.h": "c"
     }
 }

@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "defs.h"
+#include <ctype.h>
+
 /*Types of addressing methods*/
 typedef enum
 {
@@ -33,5 +35,28 @@ int is_operation_name(char *name);
 int is_register_name(char *name);
 
 OperandType *get_allowed_addressing_methods(char *name, int source_or_target);
+
+/*Operation Type Detection*/
+
+/*Detect data operation based on the name*/
+int is_data_operation(char *word);
+/*Detect extern operation based on the name*/
+int is_extern_operation(char *word);
+/*Detect entry operation based on the name*/
+int is_entry_operation(char *word);
+/*Detect code operation based on the name*/
+int is_code_operation(char *word);
+/*Detect if word is a label declaration*/
+int is_label_dec(char *word);
+/*Detect if word is a reserved word*/
+int is_reserved_word(char *word);
+
+/*Validate line operands and format based on operation*/
+
+int validate_data(char *word);
+int validate_extern(char *word);
+int validate_entry(char *word);
+/*Validates format of operands and allowed addressing methods based on operation name.*/
+int validate_code(char *word);
 
 #endif

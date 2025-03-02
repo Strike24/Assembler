@@ -65,3 +65,201 @@ OperandType *get_allowed_addressing_methods(char *name, int source_or_target)
     }
     return NULL;
 }
+
+int is_data_operation(char *word)
+{
+    /*Check if word is .data or .string which is a data operation*/
+    if ((strcmp(word, ".data") == 0) || (strcmp(word, ".string") == 0))
+    {
+        return TRUE;
+    }
+    return FALSE;
+}
+
+int is_extern_operation(char *word)
+{
+    /*Check if word is .extern which is an extern operation*/
+    if (strcmp(word, ".extern") == 0)
+    {
+        return TRUE;
+    }
+    return FALSE;
+}
+
+int is_entry_operation(char *word)
+{
+    /*Check if word is .entry which is an entry operation*/
+    if (strcmp(word, ".entry") == 0)
+    {
+        return TRUE;
+    }
+    return FALSE;
+}
+
+int is_code_operation(char *word)
+{
+    /*Check if word is a valid code operation name*/
+    /*Searches if word is found in the code operations table*/
+    return is_operation_name(word);
+}
+
+int is_label_dec(char *word_original)
+{
+    /*Copy word to new string to avoid strtok changes*/
+    char *word = (char *)malloc(strlen(word_original) + 1);
+    char *colon;
+    int i;
+
+    strcpy(word, word_original);
+    colon = strchr(word, ':');
+    if (colon == NULL) /*Check if : are existent*/
+    {
+        free(word);
+        return FALSE;
+    }
+    /*Remove : from word*/
+    *colon = '\0';
+
+    /*Check if label is valid*/
+    /*Check that there were no spaces before :*/
+    if (word[strlen(word) - 1] == ' ')
+    {
+        free(word);
+        return FALSE;
+    }
+
+    /*Check maximum length of label*/
+    if (strlen(word) > 31)
+    {
+        free(word);
+        return FALSE;
+    }
+
+    /*Check if label starts with alphabatic letter*/
+    if (!isalpha(word[0]))
+    {
+        free(word);
+        return FALSE;
+    }
+
+    /*Check if label letters are alphabatic or digits*/
+    for (i = 1; (i < strlen(word)); i++)
+    {
+        if (!isalnum(word[i]))
+        {
+            free(word);
+            return FALSE;
+        }
+    }
+    /*Check if label is a reserved word*/
+    if (is_reserved_word(word))
+    {
+        free(word);
+        return FALSE;
+    }
+
+    free(word);
+    return TRUE;
+}
+
+int is_reserved_word(char *word)
+{
+    /*Check if word is a reserved word by checking if it's a code, data, extern,
+     entry operation or a register name \ macro name*/
+    if (is_code_operation(word))
+        return TRUE;
+
+    if (is_data_operation(word))
+        return TRUE;
+
+    if (is_extern_operation(word))
+        return TRUE;
+
+    if (is_entry_operation(word))
+        return TRUE;
+
+    /*   if (is_macro(word))
+        return TRUE;
+        */
+
+    if (is_register_name(word))
+        return TRUE;
+
+    /*Check if equals to entry, data, extern without the .
+    they are also reserved words*/
+    if ((strcmp(word, "entry") == 0) || (strcmp(word, "data") == 0) || (strcmp(word, "extern") == 0))
+        return TRUE;
+
+    return FALSE;
+}
+
+int validate_data(char *word)
+{
+    char *endptr; /*Used for strtol to check if word is a number*/
+    word = strtok(word, ",");
+    while (word != NULL)
+    {
+        if (word == NULL)
+        {
+            /*Error: No data found*/
+            return FALSE;
+        }
+
+        if ((word[0] != '+') && (word[0] != '-') && (!isdigit(word[0])))
+        {
+            /*Error: word must start with +,- or digit*/
+            return FALSE;
+        }
+
+        strtol(word, &endptr, BASE_10);
+        if (endptr == word)
+        {
+            /*Error: no numbers were found*/
+            return FALSE;
+        }
+        else if (*endptr != '\0')
+        {
+            /*Error: word is not a number, invalid chars found*/
+            printf("%s\n", endptr);
+            return FALSE;
+        }
+
+        word = strtok(NULL, ",");
+    }
+    return TRUE;
+}
+
+int validate_extern(char *word)
+{
+    word = strtok(word, " ");
+    if (word == NULL)
+    {
+        /*Error: No data found*/
+        return FALSE;
+    }
+    /*Otherwise, label name validation will be handled in the second pass where the label
+    is already initalized*/
+    return TRUE;
+}
+int validate_entry(char *word)
+{
+    word = strtok(word, " ");
+    if (word == NULL)
+    {
+        /*Error: No data found*/
+        return FALSE;
+    }
+    /*Otherwise, label name validation will be handled in the second pass where the label
+    is already initalized*/
+    return TRUE;
+}
+
+int validate_code(char *word)
+{
+    OperandType *allowed_source_methods;
+    OperandType *allowed_target_methods;
+    word = strtok(word, " \t\n");
+    allowed_source_methods = get_allowed_addressing_methods(word, SOURCE);
+    allowed_target_methods = get_allowed_addressing_methods(word, TARGET);
+    return TRUE;
+}
