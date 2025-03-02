@@ -58,5 +58,6 @@ int validate_extern(char *word);
 int validate_entry(char *word);
 /*Validates format of operands and allowed addressing methods based on operation name.*/
 int validate_code(char *word);
-
+int is_integer(char *str, int len);
+int is_legal_label_name(char *word);
 #endif

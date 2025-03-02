@@ -128,17 +128,29 @@ int is_label_dec(char *word_original)
         return FALSE;
     }
 
+    /*Check if label name is valid*/
+    if (!is_legal_label_name(word))
+    {
+        free(word);
+        return FALSE;
+    }
+
+    free(word);
+    return TRUE;
+}
+
+int is_legal_label_name(char *word)
+{
+    int i;
     /*Check maximum length of label*/
     if (strlen(word) > 31)
     {
-        free(word);
         return FALSE;
     }
 
     /*Check if label starts with alphabatic letter*/
     if (!isalpha(word[0]))
     {
-        free(word);
         return FALSE;
     }
 
@@ -147,18 +159,18 @@ int is_label_dec(char *word_original)
     {
         if (!isalnum(word[i]))
         {
-            free(word);
-            return FALSE;
+            if ((i == strlen(word) - 1) && (word[i] == '\n'))
+                return TRUE;
+            else
+                return FALSE;
         }
     }
     /*Check if label is a reserved word*/
     if (is_reserved_word(word))
     {
-        free(word);
         return FALSE;
     }
 
-    free(word);
     return TRUE;
 }
 
@@ -196,37 +208,76 @@ int is_reserved_word(char *word)
 int validate_data(char *word)
 {
     char *endptr; /*Used for strtol to check if word is a number*/
+    int res = FALSE;
     word = strtok(word, ",");
     while (word != NULL)
     {
-        if (word == NULL)
+        res = TRUE;
+        /*
+        if ((word[0] != '+') && (word[0] != '-') && (!isdigit(word[0])) && (word[0] != ' ') && (word[0] != '\t'))
         {
-            /*Error: No data found*/
-            return FALSE;
-        }
-
-        if ((word[0] != '+') && (word[0] != '-') && (!isdigit(word[0])))
-        {
-            /*Error: word must start with +,- or digit*/
             return FALSE;
         }
 
         strtol(word, &endptr, BASE_10);
         if (endptr == word)
         {
-            /*Error: no numbers were found*/
             return FALSE;
         }
         else if (*endptr != '\0')
         {
-            /*Error: word is not a number, invalid chars found*/
             printf("%s\n", endptr);
             return FALSE;
+        }
+        */
+
+        if (!is_integer(word, strlen(word)))
+        {
+            res = FALSE;
+            return res;
         }
 
         word = strtok(NULL, ",");
     }
-    return TRUE;
+    return res;
+}
+
+int is_integer(char *str, int len)
+{
+    int i = 0;
+    if (str == NULL)
+        return 0;
+
+    while ((i < len) && (str[0] == ' ' || str[0] == '\t'))
+    {
+        str++;
+        i++;
+    }
+
+    if ((i < len) && (str[0] == '+' || str[0] == '-'))
+    {
+        str++;
+        i++;
+    }
+
+    if ((i < len) && !isdigit(str[0]))
+    {
+        return FALSE;
+    }
+
+    while ((i < len) && isdigit(str[0]))
+    {
+        str++;
+        i++;
+    }
+
+    while ((i < len) && (str[0] == ' ' || str[0] == '\t' || str[0] == '\n'))
+    {
+        str++;
+        i++;
+    }
+
+    return str[0] == '\0';
 }
 
 int validate_extern(char *word)
@@ -237,8 +288,11 @@ int validate_extern(char *word)
         /*Error: No data found*/
         return FALSE;
     }
-    /*Otherwise, label name validation will be handled in the second pass where the label
-    is already initalized*/
+
+    if (!is_legal_label_name(word))
+    {
+        return FALSE;
+    }
     return TRUE;
 }
 int validate_entry(char *word)
@@ -249,8 +303,12 @@ int validate_entry(char *word)
         /*Error: No data found*/
         return FALSE;
     }
-    /*Otherwise, label name validation will be handled in the second pass where the label
-    is already initalized*/
+
+    if (!is_legal_label_name(word))
+    {
+        return FALSE;
+    }
+
     return TRUE;
 }
 

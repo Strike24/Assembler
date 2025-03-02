@@ -44,6 +44,7 @@ int parse_line(char *line, int *IC, int *DC, int *is_label, Label *label_list)
     symbol = validate_line(line, &isValid, is_label);
     /*For every symbol type, code operation and oprands into binary
     If label is present, add it to the symbols table*/
+
     switch (symbol)
     {
     case DATA:
@@ -68,9 +69,10 @@ int parse_line(char *line, int *IC, int *DC, int *is_label, Label *label_list)
 LabelType validate_line(char *line, int *is_valid, int *is_label)
 {
     char line_original[MAX_LINE];
+    char *word;
     strcpy(line_original, line);
     /*Get first word in line*/
-    char *word = strtok(line, " \t\n");
+    word = strtok(line, " \t\n");
     if (is_label_dec(word)) /*If label declaration found, turn on flag, skip to next word*/
     {
         *is_label = TRUE;
@@ -100,8 +102,8 @@ LabelType validate_line(char *line, int *is_valid, int *is_label)
     }
     else if (is_code_operation(word))
     {
-        /*No need to get rest of the line, need to send the entire line to validate_code*/
-        *is_valid = validate_code(line_original);
+        word = strtok(NULL, "");
+        *is_valid = validate_code(word);
         return CODE;
     }
     else
