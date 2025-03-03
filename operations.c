@@ -312,12 +312,53 @@ int validate_entry(char *word)
     return TRUE;
 }
 
-int validate_code(char *word)
+int validate_code(char *operation, char *oprands)
 {
+
     OperandType *allowed_source_methods;
     OperandType *allowed_target_methods;
-    word = strtok(word, " \t\n");
-    allowed_source_methods = get_allowed_addressing_methods(word, SOURCE);
-    allowed_target_methods = get_allowed_addressing_methods(word, TARGET);
-    return TRUE;
+    allowed_source_methods = get_allowed_addressing_methods(operation, SOURCE);
+    allowed_target_methods = get_allowed_addressing_methods(operation, TARGET);
+    oprands = strtok(oprands, ",");
+}
+
+int is_immediate(char *word)
+{
+    if (word[0] == '#')
+    {
+        word++;
+        if (is_integer(word, strlen(word)))
+        {
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+int is_direct(char *word)
+{
+    if (is_legal_label_name(word))
+    {
+        return TRUE;
+    }
+    return FALSE;
+}
+int is_relative(char *word)
+{
+    if (word[0] == '&')
+    {
+        word++;
+        if (is_legal_label_name(word))
+        {
+            return TRUE;
+        }
+    }
+    return FALSE;
+}
+int is_register(char *word)
+{
+    if (is_register_name(word))
+    {
+        return TRUE;
+    }
+    return FALSE;
 }

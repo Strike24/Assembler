@@ -70,6 +70,7 @@ LabelType validate_line(char *line, int *is_valid, int *is_label)
 {
     char line_original[MAX_LINE];
     char *word;
+    char *rest;
     strcpy(line_original, line);
     /*Get first word in line*/
     word = strtok(line, " \t\n");
@@ -102,8 +103,9 @@ LabelType validate_line(char *line, int *is_valid, int *is_label)
     }
     else if (is_code_operation(word))
     {
-        word = strtok(NULL, "");
-        *is_valid = validate_code(word);
+        /*For code, send the entire line, including the operation*/
+        rest = strtok(NULL, "");
+        *is_valid = validate_code(word, rest);
         return CODE;
     }
     else

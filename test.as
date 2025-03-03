@@ -1,4 +1,4 @@
-COOL:       .entry hello
+COOL:       mov r4, STR
 MAIN:       add r3, LIST
 LOOP:       prn #48
 HELLO:      mcro a_mc
