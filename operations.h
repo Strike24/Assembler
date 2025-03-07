@@ -12,6 +12,7 @@
 /*Types of addressing methods*/
 typedef enum
 {
+    NONE = -1,
     IMMEDIATE,
     DIRECT,
     RELATIVE,
@@ -24,8 +25,8 @@ typedef struct
     char *name;
     int opcode;
     int funct;
-    OperandType allowed_source[3]; /*Allowed addressing methods for source*/
-    OperandType allowed_target[3]; /*Allowed addressing methods for target*/
+    OperandType allowed_source[MAX_OPERAND_TYPES]; /*Allowed addressing methods for source*/
+    OperandType allowed_target[MAX_OPERAND_TYPES]; /*Allowed addressing methods for target*/
 
 } Operation;
 
@@ -33,7 +34,8 @@ typedef struct
 int is_operation_name(char *name);
 /* check if a string is one of the register names */
 int is_register_name(char *name);
-
+int get_register_index(char *register_name);
+Operation *get_operation(char *name);
 OperandType *get_allowed_addressing_methods(char *name, int source_or_target);
 
 /*Operation Type Detection*/
@@ -56,6 +58,7 @@ int is_reserved_word(char *word);
 int validate_data(char *word);
 int validate_extern(char *word);
 int validate_entry(char *word);
+int validate_string(char *word);
 /*Validates format of operands and allowed addressing methods based on operation name.*/
 int validate_code(char *operation, char *oprands);
 int is_integer(char *str, int len);
@@ -67,4 +70,5 @@ int is_immediate(char *word);
 int is_direct(char *word);
 int is_relative(char *word);
 int is_register(char *word);
+int get_operand_type(char *word);
 #endif

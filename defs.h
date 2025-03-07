@@ -3,7 +3,9 @@
 #define ERROR -1
 #define NUM_OF_OPERATIONS 16
 #define NUM_OF_REGISTERS 8
-#define MAX_LINE 256
+#define MAX_OPERAND_TYPES 4
+#define MAX_OPERANDS 2
+#define MAX_LINE 81
 #define PRE_MACRO_EXT ".as"
 #define POST_MACRO_EXT ".am"
 #define BASE_10 10

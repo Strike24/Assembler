@@ -1,24 +1,37 @@
 #include "operations.h"
 
 Operation OPERATIONS[NUM_OF_OPERATIONS] = {
-    {"mov", 0, 0, {IMMEDIATE, DIRECT, REGISTER}, {DIRECT, REGISTER}},
-    {"cmp", 1, 0, {IMMEDIATE, DIRECT, REGISTER}, {IMMEDIATE, DIRECT, REGISTER}},
-    {"add", 2, 1, {IMMEDIATE, DIRECT, REGISTER}, {DIRECT, REGISTER}},
-    {"sub", 2, 2, {IMMEDIATE, DIRECT, REGISTER}, {DIRECT, REGISTER}},
-    {"lea", 4, 0, {DIRECT, IMMEDIATE}, {DIRECT, REGISTER}},
-    {"clr", 5, 1, {0}, {DIRECT, REGISTER}},
-    {"not", 5, 2, {0}, {DIRECT, REGISTER}},
-    {"inc", 5, 3, {0}, {DIRECT, REGISTER}},
-    {"dec", 5, 4, {0}, {DIRECT, REGISTER}},
-    {"jmp", 9, 1, {0}, {DIRECT, RELATIVE}},
-    {"bne", 9, 2, {0}, {DIRECT, RELATIVE}},
-    {"jsr", 9, 3, {0}, {DIRECT, RELATIVE}},
-    {"red", 12, 0, {0}, {DIRECT, REGISTER}},
-    {"prn", 13, 0, {0}, {IMMEDIATE, DIRECT, REGISTER}},
-    {"rts", 14, 0, {0}, {0}},
-    {"stop", 15, 0, {0}, {0}}};
+    {"mov", 0, 0, {IMMEDIATE, DIRECT, REGISTER, -1}, {DIRECT, REGISTER, -1}},
+    {"cmp", 1, 0, {IMMEDIATE, DIRECT, REGISTER, -1}, {IMMEDIATE, DIRECT, REGISTER, -1}},
+    {"add", 2, 1, {IMMEDIATE, DIRECT, REGISTER, -1}, {DIRECT, REGISTER, -1}},
+    {"sub", 2, 2, {IMMEDIATE, DIRECT, REGISTER, -1}, {DIRECT, REGISTER, -1}},
+    {"lea", 4, 0, {DIRECT, IMMEDIATE, -1}, {DIRECT, REGISTER, -1}},
+    {"clr", 5, 1, {NONE}, {DIRECT, REGISTER, -1}},
+    {"not", 5, 2, {NONE}, {DIRECT, REGISTER, -1}},
+    {"inc", 5, 3, {NONE}, {DIRECT, REGISTER, -1}},
+    {"dec", 5, 4, {NONE}, {DIRECT, REGISTER, -1}},
+    {"jmp", 9, 1, {NONE}, {DIRECT, RELATIVE, -1}},
+    {"bne", 9, 2, {NONE}, {DIRECT, RELATIVE, -1}},
+    {"jsr", 9, 3, {NONE}, {DIRECT, RELATIVE, -1}},
+    {"red", 12, 0, {NONE}, {DIRECT, REGISTER, -1}},
+    {"prn", 13, 0, {NONE}, {IMMEDIATE, DIRECT, REGISTER, -1}},
+    {"rts", 14, 0, {NONE}, {NONE}},
+    {"stop", 15, 0, {NONE}, {NONE}}};
 
 char *register_names[] = {"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7"};
+
+int get_register_index(char *register_name)
+{
+    int i;
+    for (i = 0; i < NUM_OF_REGISTERS; i++)
+    {
+        if (strcmp(register_names[i], register_name) == 0)
+        {
+            return i;
+        }
+    }
+    return -1;
+}
 
 int is_operation_name(char *name)
 {
@@ -44,6 +57,19 @@ int is_register_name(char *name)
         }
     }
     return FALSE;
+}
+
+Operation *get_operation(char *name)
+{
+    int i;
+    for (i = 0; i < NUM_OF_OPERATIONS; i++)
+    {
+        if (strcmp(OPERATIONS[i].name, name) == 0)
+        {
+            return &OPERATIONS[i];
+        }
+    }
+    return NULL;
 }
 
 OperandType *get_allowed_addressing_methods(char *name, int source_or_target)
@@ -108,7 +134,6 @@ int is_label_dec(char *word_original)
     /*Copy word to new string to avoid strtok changes*/
     char *word = (char *)malloc(strlen(word_original) + 1);
     char *colon;
-    int i;
 
     strcpy(word, word_original);
     colon = strchr(word, ':');
@@ -207,7 +232,7 @@ int is_reserved_word(char *word)
 
 int validate_data(char *word)
 {
-    char *endptr; /*Used for strtol to check if word is a number*/
+    /*char *endptr; Used for strtol to check if word is a number*/
     int res = FALSE;
     word = strtok(word, ",");
     while (word != NULL)
@@ -240,6 +265,26 @@ int validate_data(char *word)
         word = strtok(NULL, ",");
     }
     return res;
+}
+
+int validate_string(char *word)
+{
+    /*Check if word is a string*/
+    if (word[0] != '"')
+    {
+        return FALSE;
+    }
+    word++;
+    while (word[0] != '"')
+    {
+        if (word[0] == '\0')
+        {
+            return FALSE;
+        }
+
+        word++;
+    }
+    return TRUE;
 }
 
 int is_integer(char *str, int len)
@@ -317,9 +362,85 @@ int validate_code(char *operation, char *oprands)
 
     OperandType *allowed_source_methods;
     OperandType *allowed_target_methods;
+    OperandType current_oprand_type = NONE;
+    int i = 0;
+    int result = TRUE;
+
     allowed_source_methods = get_allowed_addressing_methods(operation, SOURCE);
     allowed_target_methods = get_allowed_addressing_methods(operation, TARGET);
+
     oprands = strtok(oprands, ",");
+
+    if (allowed_source_methods[0] != NONE)
+    {
+        if (oprands == NULL)
+        {
+            /*Error: No oprands found, but needed*/
+            printf("No oprands found, but needed for stop\n");
+            return FALSE;
+        }
+        current_oprand_type = get_operand_type(oprands);
+        if (current_oprand_type == -1)
+        {
+            return FALSE;
+        }
+        for (i = 0; allowed_source_methods[i] != -1; i++)
+        {
+            if (allowed_source_methods[i] == current_oprand_type)
+            {
+                oprands = strtok(NULL, ",");
+                result = TRUE;
+                break;
+            }
+            result = FALSE;
+        }
+    }
+    if (allowed_target_methods[0] != NONE)
+    {
+        if (oprands == NULL)
+        {
+            /*Error: No oprands found*/
+            printf("No oprands found, but needed for target\n");
+            return FALSE;
+        }
+        current_oprand_type = get_operand_type(oprands);
+        if (current_oprand_type == -1)
+        {
+            return FALSE;
+        }
+        for (i = 0; allowed_target_methods[i] != -1; i++)
+        {
+            if (allowed_target_methods[i] == current_oprand_type)
+            {
+                oprands = strtok(NULL, ",");
+                result = TRUE;
+                break;
+            }
+            result = FALSE;
+        }
+    }
+    return result;
+}
+
+int get_operand_type(char *word)
+{
+    if (is_immediate(word))
+    {
+        return IMMEDIATE;
+    }
+    else if (is_direct(word))
+    {
+        return DIRECT;
+    }
+    else if (is_relative(word))
+    {
+        return RELATIVE;
+    }
+    else if (is_register(word))
+    {
+        return REGISTER;
+    }
+    return -1;
 }
 
 int is_immediate(char *word)

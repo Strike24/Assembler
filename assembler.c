@@ -11,11 +11,13 @@ int main(int argc, char *argv[])
     }
     for (i = 1; i < argc; i++)
     {
+        /*
         if (pre_assembler(argv[i]) == ERROR)
         {
             printf("Error: pre assmebler failed\n");
             return 1;
         }
+            */
 
         if (first_pass(argv[i]) == ERROR)
         {
