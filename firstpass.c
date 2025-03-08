@@ -34,7 +34,8 @@ int parse_line(char *line, int *IC, int *DC, int *is_label, Label *label_list)
 {
     /*Save original line because we are changing "line" with strtok*/
     char line_original[MAX_LINE];
-    char *word;
+    char *word = line_original;
+    BinaryLine binaryLine;
     /*validate_line will return the operation type for each line of code*/
     LabelType symbol = 0;
     int isValid = FALSE;
@@ -45,10 +46,13 @@ int parse_line(char *line, int *IC, int *DC, int *is_label, Label *label_list)
     symbol = validate_line(line, &isValid, is_label);
     /*For every symbol type, code operation and oprands into binary
     If label is present, add it to the symbols table*/
-    if (is_label)
+
+    if (*is_label)
     {
         word = strtok(line_original, " \t\n");
+        printf("LABEL: %s\n", word);
         word = strtok(NULL, "");
+        *is_label = FALSE;
     }
 
     if (isValid)
@@ -64,10 +68,12 @@ int parse_line(char *line, int *IC, int *DC, int *is_label, Label *label_list)
         case ENTRY:
             break;
         case CODE:
-            code_binary(IC, word);
+            binaryLine = code_binary(IC, word);
+
             break;
 
         default:
+            printf("\n");
             break;
         }
     }
