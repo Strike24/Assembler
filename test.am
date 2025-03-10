@@ -1,3 +1,5 @@
+            .data -10, 15, 23
+            .string "omri-love-boys"
 COOL:       bne &END
 MAIN:       add r3, LIST
 LOOP:       prn #48

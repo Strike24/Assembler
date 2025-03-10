@@ -1,9 +1,8 @@
 #include "firstpass.h"
 
-int first_pass(char *filename)
+int first_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, Label *label_list)
 {
     FILE *input_file;
-    Label *label_list = init_label_table();
     int IC = 100;
     int DC = 0;
     char line[MAX_LINE];
@@ -22,15 +21,16 @@ int first_pass(char *filename)
     /*Read line by line, send each line for parsing*/
     while (fgets(line, MAX_LINE, input_file))
     {
-        parse_line(line, &IC, &DC, &is_label, label_list);
+        parse_line(line, &IC, &DC, &is_label, code_image, data_image, label_list);
     }
 
     /*Close file after all lines were read (reached EOF)*/
+    /*print_binary_image(code_image);*/
     fclose(input_file);
     return 0;
 }
 
-int parse_line(char *line, int *IC, int *DC, int *is_label, Label *label_list)
+int parse_line(char *line, int *IC, int *DC, int *is_label, BinaryNode *code_image, BinaryNode *data_image, Label *label_list)
 {
     /*Save original line because we are changing "line" with strtok*/
     char line_original[MAX_LINE];
@@ -42,15 +42,28 @@ int parse_line(char *line, int *IC, int *DC, int *is_label, Label *label_list)
     /*Copy line to original line before making changes*/
     strcpy(line_original, line);
 
-    /*Validate line and get operation type */
-    symbol = validate_line(line, &isValid, is_label);
-    /*For every symbol type, code operation and oprands into binary
-    If label is present, add it to the symbols table*/
+    if (line[0] == ';') /*If line is a comment, skip it*/
+    {
+        return TRUE;
+    }
 
+    /*Validate line and get operation type*/
+    symbol = validate_line(line, &isValid, is_label);
+
+    /*If label was found, get the label name and skip to next word*/
     if (*is_label)
     {
         word = strtok(line_original, " \t\n");
-        printf("LABEL: %s\n", word);
+        word[strlen(word) - 1] = '\0';
+        if (symbol == EXTERNAL || symbol == ENTRY)
+        {
+            printf("Warning: Label cannot be decleared before .extern \ .entry.\nLabel will be ignored.\n");
+            printf("\t%s\n", line);
+        }
+        else
+        {
+            add_label(label_list, word, *IC, symbol);
+        }
         word = strtok(NULL, "");
         *is_label = FALSE;
     }
@@ -60,20 +73,21 @@ int parse_line(char *line, int *IC, int *DC, int *is_label, Label *label_list)
         switch (symbol)
         {
         case DATA:
-            /* code */
+            binaryLine = data_binary(DC, word);
+            add_binary_line(binaryLine, data_image);
             break;
         case EXTERNAL:
-            /* code */
-            break;
-        case ENTRY:
+            add_extern_label(word, label_list);
             break;
         case CODE:
             binaryLine = code_binary(IC, word);
-
+            add_binary_line(binaryLine, code_image);
             break;
-
+        case ENTRY:
+            /*.entry will be handled at the second pass.*/
+            break;
         default:
-            printf("\n");
+            printf("Error: Invalid line format\n\t%s\n", line);
             break;
         }
     }
@@ -82,6 +96,8 @@ int parse_line(char *line, int *IC, int *DC, int *is_label, Label *label_list)
         printf("Error: Invalid line format\n\t%s\n", line);
     }
 
+    /*Update addresses for data labels by adding IC*/
+    update_data_addresses(label_list, *IC);
     return TRUE;
 }
 
@@ -101,11 +117,12 @@ LabelType validate_line(char *line, int *is_valid, int *is_label)
     }
 
     /*Check if word is a valid operation, detrmain it's type*/
+    /*Validate format and allowed input for each type of operation*/
     if (is_data_operation(word))
     {
         if (strcmp(word, ".string") == 0)
         {
-            is_string = TRUE;
+            is_string = TRUE; /*Set flag for string*/
         }
         /*Get rest of the line without the operation*/
         word = strtok(NULL, "");
@@ -148,7 +165,7 @@ LabelType validate_line(char *line, int *is_valid, int *is_label)
     else
     {
         *is_valid = FALSE;
-        return 0;
+        return ERROR;
     }
 }
 /*trim all whitespaces from char* */

@@ -67,3 +67,26 @@ void free_label_table(Label *head)
         free(temp);
     }
 }
+
+int add_extern_label(char *line, Label *head)
+{
+    char *word;
+    word = strtok(line, " \t\n");
+    word = strtok(NULL, " \t\n");
+    add_label(head, word, 0, EXTERNAL);
+    return 0;
+}
+
+int update_data_addresses(Label *head, int IC)
+{
+    Label *temp = head->next;
+    while (temp != NULL)
+    {
+        if (temp->type == DATA)
+        {
+            temp->address += IC;
+        }
+        temp = temp->next;
+    }
+    return 0;
+}

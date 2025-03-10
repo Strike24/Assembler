@@ -4,9 +4,74 @@
 #define OPERAND1_LINE_INDEX 1
 #define OPERAND2_LINE_INDEX 2
 
+BinaryNode *init_binary_image()
+{
+    BinaryNode *head = (BinaryNode *)malloc(sizeof(BinaryNode));
+    if (!head)
+    {
+        return NULL;
+    }
+    head->line = NULL;
+    head->next = NULL;
+    return head;
+}
+
+int add_binary_line(BinaryLine binaryLine, BinaryNode *head)
+{
+    BinaryNode *newNode = (BinaryNode *)malloc(sizeof(BinaryNode));
+    if (!newNode)
+    {
+        return ERROR;
+    }
+    newNode->line = (BinaryLine *)malloc(sizeof(BinaryLine));
+    if (!newNode->line)
+    {
+        free(newNode);
+        return ERROR;
+    }
+    memcpy(newNode->line, &binaryLine, sizeof(BinaryLine));
+    newNode->next = head->next;
+    head->next = newNode;
+    return 0;
+}
+
+void free_binary_image(BinaryNode *head)
+{
+    BinaryNode *current = head->next;
+    BinaryNode *next = NULL;
+    while (current != NULL)
+    {
+        next = current->next;
+        free(current->line->code);
+        free(current->line);
+        free(current);
+        current = next;
+    }
+    free(head);
+}
+
+void print_binary_image(BinaryNode *head)
+{
+    BinaryNode *current = head->next;
+    while (current != NULL)
+    {
+        printf("Address: %d\n", current->line->address);
+        printf("Code: %08X\n", current->line->code[OPERATION_LINE_INDEX]);
+        if (current->line->num_of_lines > 1)
+        {
+            printf("\tCode: %08X\n", current->line->code[OPERAND1_LINE_INDEX]);
+        }
+        if (current->line->num_of_lines > 2)
+        {
+            printf("\tCode: %08X\n", current->line->code[OPERAND2_LINE_INDEX]);
+        }
+        current = current->next;
+    }
+}
+
 BinaryLine code_binary(int *IC, char *line)
 {
-    BinaryLine binaryLine = {0, {0}, 0};
+    BinaryLine binaryLine = {0, 0, 0};
     Operation *operation = NULL;
     char line_original[MAX_LINE] = {0};
     char *word = NULL;
@@ -16,6 +81,12 @@ BinaryLine code_binary(int *IC, char *line)
     binaryLine.address = *IC;
     binaryLine.num_of_lines = 1;
     /*binaryLine.code = 0;*/
+    binaryLine.code = (unsigned int *)malloc(sizeof(unsigned int) * MAX_OPERANDS + 1);
+    if (!binaryLine.code)
+    {
+        printf("Error: Memory allocation failed\n");
+        return binaryLine;
+    }
 
     word = strtok(line, " \t\n");
     if (word == NULL)
@@ -143,4 +214,95 @@ void add_empty_line(BinaryLine *binaryLine)
         binaryLine->code[binaryLine->num_of_lines] = 0;
         binaryLine->num_of_lines++; /*Increment number of lines*/
     }
+}
+
+BinaryLine data_binary(int *DC, char *line)
+{
+    BinaryLine binaryLine = {0, 0, 0};
+    char line_original[MAX_LINE] = {0};
+    char *word = NULL;
+    int i = 0;
+    int num_of_integers = 0;
+
+    strcpy(line_original, line);
+    binaryLine.address = *DC;
+    binaryLine.num_of_lines = 0;
+    /*binaryLine.code = 0;*/
+
+    word = strtok(line, " \t\n");
+    if (word == NULL)
+    {
+        return binaryLine;
+    }
+
+    if (strcmp(word, ".string") == 0)
+    {
+        word = strtok(NULL, "");
+        trim(word);
+        word++;                        /*Skip first "*/
+        word[strlen(word) - 1] = '\0'; /*Skip last "*/
+        binaryLine.code = (unsigned int *)malloc(sizeof(unsigned int) * strlen(word) + 1);
+        memset(binaryLine.code, 0, sizeof(unsigned int) * strlen(word) + 1);
+        if (!binaryLine.code)
+        {
+            printf("Error: Memory allocation failed\n");
+            return binaryLine;
+        }
+        binaryLine.num_of_lines = strlen(word) + 1;
+        for (i = 0; i < binaryLine.num_of_lines - 1; i++)
+        {
+            binaryLine.code[i] = (unsigned char)word[i]; /*Stores ascii value of word[i]*/
+        }
+        binaryLine.code[binaryLine.num_of_lines - 1] = 'A';
+    }
+    else if (strcmp(word, ".data") == 0)
+    {
+
+        word = strtok(NULL, "");
+        trim(word);
+        num_of_integers = get_number_of_integers(word);
+        binaryLine.code = (unsigned int *)malloc(sizeof(unsigned int) * num_of_integers + 1);
+        if (!binaryLine.code || num_of_integers == ERROR)
+        {
+            printf("Error: Memory allocation failed\n");
+            return binaryLine;
+        }
+        word = strtok(word, ",");
+        while (word != NULL)
+        {
+            if (binaryLine.num_of_lines <= num_of_integers)
+            {
+                binaryLine.code[binaryLine.num_of_lines] = atoi(word);
+                binaryLine.num_of_lines++;
+            }
+            word = strtok(NULL, ",");
+        }
+    }
+    else
+    {
+        printf("Error: Invalid data operation %s\nShould not happen!! DEBUG\n", word);
+    }
+
+    (*DC) += binaryLine.num_of_lines;
+    return binaryLine;
+}
+
+int get_number_of_integers(char *line)
+{
+    char *line_copy = (char *)malloc(strlen(line) + 1);
+    int count = 0;
+    char *word = NULL;
+    if (!line_copy)
+    {
+        return ERROR;
+    }
+    strcpy(line_copy, line);
+    word = strtok(line_copy, ",");
+    while (word != NULL)
+    {
+        count++;
+        word = strtok(NULL, ",");
+    }
+    free(line_copy);
+    return count;
 }

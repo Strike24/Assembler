@@ -27,5 +27,6 @@ Label *find_label(Label *head, char *name);
 
 int add_label(Label *head, char *name, int address, LabelType type);
 void free_label_table(Label *head);
-
+int add_extern_label(char *line, Label *head);
+int update_data_addresses(Label *head, int IC);
 #endif

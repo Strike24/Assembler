@@ -9,3 +9,5 @@
 #define PRE_MACRO_EXT ".as"
 #define POST_MACRO_EXT ".am"
 #define BASE_10 10
+#define MAX_CODE_LINES 300
+#define MAX_DATA_LINES 300
