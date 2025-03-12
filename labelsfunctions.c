@@ -9,6 +9,7 @@ Label *init_label_table()
     }
     head->name = NULL;
     head->next = NULL;
+    head->prev = NULL;
     return head;
 }
 
@@ -48,6 +49,11 @@ int add_label(Label *head, char *name, int address, LabelType type)
     newLabel->type = type;
 
     newLabel->next = head->next;
+    newLabel->prev = head;
+    if (head->next != NULL)
+    {
+        head->next->prev = newLabel;
+    }
     head->next = newLabel;
     return 0;
 }

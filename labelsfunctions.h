@@ -20,6 +20,7 @@ typedef struct Label
     int address;
     LabelType type;
     struct Label *next;
+    struct Label *prev;
 } Label;
 
 Label *init_label_table();
