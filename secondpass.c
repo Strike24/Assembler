@@ -5,6 +5,9 @@ int second_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, 
     FILE *input_file;
     char line[MAX_LINE];
     int line_number = 1;
+    ExternLabel *extern_label_list = init_extern_label_table();
+    Label *current_label = NULL;
+    char *word = NULL;
 
     /*Open file after preassmbler macro expantion (.am)*/
     input_file = open_file(filename, "r", POST_MACRO_EXT);
@@ -16,8 +19,7 @@ int second_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, 
 
     while (fgets(line, MAX_LINE, input_file))
     {
-        char *word = line;
-        Label *entry_label;
+        word = line;
 
         /*If line is a comment, skip it*/
         if (line[0] != ';')
@@ -32,21 +34,21 @@ int second_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, 
             if (is_entry_operation(word))
             {
                 word = strtok(NULL, " \t\n");
-                entry_label = find_label(label_list, word);
-                if (entry_label == NULL)
+                current_label = find_label(label_list, word);
+                if (current_label == NULL)
                 {
                     printf("Error: .entry has an unknown label name \"\n%s\"\n", word);
                     printf("Might not be declared or not exist\n");
                 }
                 else
                 {
-                    entry_label->type = ENTRY;
+                    current_label->type = ENTRY;
                 }
             }
             else if (is_code_operation(word))
             {
                 word = strtok(NULL, "");
-                fill_missing_label_info(code_image, label_list, word, line_number);
+                fill_missing_label_info(code_image, label_list, word, line_number, extern_label_list);
             }
         }
 
@@ -54,16 +56,17 @@ int second_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, 
     }
 
     align_memory_to_bits(code_image, data_image);
-    build_output_files(filename, code_image, data_image, label_list, ICF, DCF);
+    build_output_files(filename, code_image, data_image, label_list, extern_label_list, ICF, DCF);
     fclose(input_file);
+    free_extern_label_table(extern_label_list);
     return 0;
 }
 
-int fill_missing_label_info(BinaryNode *code_image, Label *label_list, char *line, int line_number)
+int fill_missing_label_info(BinaryNode *code_image, Label *label_list, char *line, int line_number, ExternLabel *extern_list)
 {
     Label *current_label = NULL;
     BinaryLine *current_line = find_by_line_number(code_image, line_number);
-    OperandType current_label_type;
+    OperandType current_operand_type;
     char *word = NULL;
     int i = 0;
     int j = 0;
@@ -78,15 +81,15 @@ int fill_missing_label_info(BinaryNode *code_image, Label *label_list, char *lin
 
     while (word != NULL && i < current_line->num_of_lines)
     {
-        current_label_type = get_operand_type(word);
-        if (current_label_type != RELATIVE && current_label_type != DIRECT)
+        current_operand_type = get_operand_type(word);
+        if (current_operand_type != RELATIVE && current_operand_type != DIRECT)
         {
             word = strtok(NULL, ",");
             i++;
             continue;
         }
 
-        if (current_label_type == RELATIVE)
+        if (current_operand_type == RELATIVE)
         {
             word++; /*Skip the &*/
         }
@@ -98,7 +101,13 @@ int fill_missing_label_info(BinaryNode *code_image, Label *label_list, char *lin
             return ERROR;
         }
 
-        if (current_label_type == RELATIVE)
+        if (current_label->type == EXTERNAL)
+        {
+            /*Add 1 to the address because address of usage is needed and not order of oprand*/
+            add_extern_label(extern_list, current_label, current_line->address + i + 1);
+        }
+
+        if (current_operand_type == RELATIVE)
         {
             for (j = 0; j < current_line->num_of_lines; j++)
             {
@@ -114,7 +123,7 @@ int fill_missing_label_info(BinaryNode *code_image, Label *label_list, char *lin
                 }
             }
         }
-        else if (current_label_type == DIRECT)
+        else if (current_operand_type == DIRECT)
         {
             for (j = 0; j < current_line->num_of_lines; j++)
             {
@@ -147,13 +156,14 @@ int fill_missing_label_info(BinaryNode *code_image, Label *label_list, char *lin
     return 0;
 }
 
-int build_output_files(char *filename, BinaryNode *code_image, BinaryNode *data_image, Label *label_list, int ICF, int DCF)
+int build_output_files(char *filename, BinaryNode *code_image, BinaryNode *data_image, Label *label_list, ExternLabel *extern_list, int ICF, int DCF)
 {
     FILE *ob_file;
     FILE *ent_file;
     FILE *ext_file;
     BinaryNode *current_node = code_image;
     Label *current_label = label_list;
+    ExternLabel *current_extern_label = extern_list;
     int is_ent_file = FALSE;
     int is_ext_file = FALSE;
 
@@ -217,30 +227,38 @@ int build_output_files(char *filename, BinaryNode *code_image, BinaryNode *data_
     fclose(ob_file);
 
     current_label = label_list;
-    if (is_ent_file)
+    if (is_ent_file && current_label != NULL)
     {
-
-        while (current_label != NULL)
+        while (current_label->next != NULL)
         {
+            current_label = current_label->next;
+        }
+        while (current_label != label_list)
+        {
+
             if (current_label->type == ENTRY)
             {
                 fprintf(ent_file, "%s %07d\n", current_label->name, current_label->address);
             }
-            current_label = current_label->next;
+            current_label = current_label->prev;
         }
         fclose(ent_file);
     }
 
-    current_label = label_list;
+    current_extern_label = extern_list;
     if (is_ext_file)
     {
-        while (current_label != NULL)
+        while (current_extern_label->next != NULL)
         {
-            if (current_label->type == EXTERNAL)
+            current_extern_label = current_extern_label->next;
+        }
+        while (current_extern_label != extern_list)
+        {
+            if (current_extern_label->usage_address != 0 && current_extern_label->label->name != NULL)
             {
-                fprintf(ext_file, "%s %07d\n", current_label->name, current_label->address);
+                fprintf(ext_file, "%s %07d\n", current_extern_label->label->name, current_extern_label->usage_address);
             }
-            current_label = current_label->next;
+            current_extern_label = current_extern_label->prev;
         }
         fclose(ext_file);
     }

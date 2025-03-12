@@ -13,9 +13,9 @@
 int second_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, Label *label_list, int ICF, int DCF);
 
 /*A function to fill missing addresses of labels*/
-int fill_missing_label_info(BinaryNode *code_image, Label *label_list, char *line, int line_number);
+int fill_missing_label_info(BinaryNode *code_image, Label *label_list, char *line, int line_number, ExternLabel *extern_list);
 
-int build_output_files(char *filename, BinaryNode *code_image, BinaryNode *data_image, Label *label_list, int ICF, int DCF);
+int build_output_files(char *filename, BinaryNode *code_image, BinaryNode *data_image, Label *label_list, ExternLabel *extern_list, int ICF, int DCF);
 int print_line_ob(FILE *ob_file, BinaryLine *current_node, int starting_index);
 int align_memory_to_bits(BinaryNode *code_image, BinaryNode *data_image);
 #endif

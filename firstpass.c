@@ -85,7 +85,7 @@ int parse_line(char *line, int *IC, int *DC, int line_number, int *is_label, Bin
             add_binary_line(binaryLine, data_image);
             break;
         case EXTERNAL:
-            add_extern_label(word, label_list);
+            add_extern_label_to_list(word, label_list);
             break;
         case CODE:
             binaryLine = code_binary(IC, word, line_number);

@@ -1,9 +1,12 @@
 .entry LIST
 .extern W
 MAIN: add r3, LIST
-LOOP: prn #48
+mcro hello
  lea W, r6
  inc r6
+mcroend
+LOOP: prn #48
+hello
  mov r3, K
  sub r1, r4
  bne END

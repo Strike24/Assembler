@@ -13,6 +13,42 @@ Label *init_label_table()
     return head;
 }
 
+ExternLabel *init_extern_label_table()
+{
+    ExternLabel *head = (ExternLabel *)malloc(sizeof(ExternLabel));
+    if (!head)
+    {
+        return NULL;
+    }
+    head->label = NULL;
+    head->usage_address = 0;
+    head->next = NULL;
+    head->prev = NULL;
+
+    return head;
+}
+
+int add_extern_label(ExternLabel *head, Label *label, int address)
+{
+    ExternLabel *newLabel;
+    newLabel = (ExternLabel *)malloc(sizeof(ExternLabel));
+    if (!newLabel || !label || head == NULL)
+    {
+        return ERROR;
+    }
+    newLabel->label = label;
+    newLabel->usage_address = address;
+
+    newLabel->next = head->next;
+    newLabel->prev = head;
+    if (head->next != NULL)
+    {
+        head->next->prev = newLabel;
+    }
+    head->next = newLabel;
+    return 0;
+}
+
 Label *find_label(Label *head, char *name)
 {
     Label *temp = head;
@@ -23,6 +59,15 @@ Label *find_label(Label *head, char *name)
         temp = temp->next;
     }
     return NULL;
+}
+
+int add_extern_label_to_list(char *line, Label *head)
+{
+    char *word;
+    word = strtok(line, " \t\n");
+    word = strtok(NULL, " \t\n");
+    add_label(head, word, 0, EXTERNAL);
+    return 0;
 }
 
 int add_label(Label *head, char *name, int address, LabelType type)
@@ -74,13 +119,15 @@ void free_label_table(Label *head)
     }
 }
 
-int add_extern_label(char *line, Label *head)
+void free_extern_label_table(ExternLabel *head)
 {
-    char *word;
-    word = strtok(line, " \t\n");
-    word = strtok(NULL, " \t\n");
-    add_label(head, word, 0, EXTERNAL);
-    return 0;
+    ExternLabel *temp;
+    while (head != NULL)
+    {
+        temp = head;
+        head = head->next;
+        free(temp);
+    }
 }
 
 int update_data_addresses(Label *head, int IC)
