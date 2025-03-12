@@ -8,6 +8,7 @@ int first_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, L
     char line[MAX_LINE];
     /* TODO: NOT SURE is_label IS REQUIRED HERE, CAN MAYBE BE ONLY IN parse_line*/
     int is_label = FALSE;
+    int line_number = 1;
 
     /*Open file after preassmbler macro expantion (.am)*/
     input_file = open_file(filename, "r", POST_MACRO_EXT);
@@ -21,16 +22,20 @@ int first_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, L
     /*Read line by line, send each line for parsing*/
     while (fgets(line, MAX_LINE, input_file))
     {
-        parse_line(line, &IC, &DC, &is_label, code_image, data_image, label_list);
+        parse_line(line, &IC, &DC, line_number, &is_label, code_image, data_image, label_list);
+        line_number++;
     }
 
     /*Close file after all lines were read (reached EOF)*/
     /*print_binary_image(code_image);*/
+
+    /*Update addresses for data labels by adding IC*/
+    update_data_addresses(label_list, IC);
     fclose(input_file);
     return 0;
 }
 
-int parse_line(char *line, int *IC, int *DC, int *is_label, BinaryNode *code_image, BinaryNode *data_image, Label *label_list)
+int parse_line(char *line, int *IC, int *DC, int line_number, int *is_label, BinaryNode *code_image, BinaryNode *data_image, Label *label_list)
 {
     /*Save original line because we are changing "line" with strtok*/
     char line_original[MAX_LINE];
@@ -57,7 +62,7 @@ int parse_line(char *line, int *IC, int *DC, int *is_label, BinaryNode *code_ima
         word[strlen(word) - 1] = '\0';
         if (symbol == EXTERNAL || symbol == ENTRY)
         {
-            printf("Warning: Label cannot be decleared before .extern \ .entry.\nLabel will be ignored.\n");
+            printf("Warning: Label cannot be decleared before .extern / .entry.\nLabel will be ignored.\n");
             printf("\t%s\n", line);
         }
         else
@@ -73,14 +78,14 @@ int parse_line(char *line, int *IC, int *DC, int *is_label, BinaryNode *code_ima
         switch (symbol)
         {
         case DATA:
-            binaryLine = data_binary(DC, word);
+            binaryLine = data_binary(DC, word, line_number);
             add_binary_line(binaryLine, data_image);
             break;
         case EXTERNAL:
             add_extern_label(word, label_list);
             break;
         case CODE:
-            binaryLine = code_binary(IC, word);
+            binaryLine = code_binary(IC, word, line_number);
             add_binary_line(binaryLine, code_image);
             break;
         case ENTRY:
@@ -96,8 +101,6 @@ int parse_line(char *line, int *IC, int *DC, int *is_label, BinaryNode *code_ima
         printf("Error: Invalid line format\n\t%s\n", line);
     }
 
-    /*Update addresses for data labels by adding IC*/
-    update_data_addresses(label_list, *IC);
     return TRUE;
 }
 

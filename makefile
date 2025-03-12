@@ -1,7 +1,7 @@
 GCCFLAGS = gcc -ansi -pedantic -g -Wall
 
-assembler: assembler.o preasm.o filefunctions.o macrofunctions.o labelsfunctions.o operations.o firstpass.o binaryfunctions.o
-	${GCCFLAGS} -ansi -pedantic -g -Wall -o assembler assembler.o preasm.o filefunctions.o macrofunctions.o labelsfunctions.o operations.o firstpass.o binaryfunctions.o
+assembler: assembler.o preasm.o filefunctions.o macrofunctions.o labelsfunctions.o operations.o firstpass.o binaryfunctions.o secondpass.o
+	${GCCFLAGS} -ansi -pedantic -g -Wall -o assembler assembler.o preasm.o filefunctions.o macrofunctions.o labelsfunctions.o operations.o firstpass.o binaryfunctions.o secondpass.o
 
 assembler.o: assembler.c assembler.h
 	${GCCFLAGS} -c assembler.c
@@ -23,6 +23,9 @@ operations.o: operations.c operations.h
 
 firstpass.o: firstpass.c firstpass.h
 	${GCCFLAGS} -c firstpass.c
+
+secondpass.o: secondpass.c secondpass.h
+	${GCCFLAGS} -c secondpass.c
 
 binaryfunctions.o: binaryfunctions.c binaryfunctions.h
 	${GCCFLAGS} -c binaryfunctions.c

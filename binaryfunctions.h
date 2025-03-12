@@ -5,16 +5,6 @@
 #include <string.h>
 #include "defs.h"
 #include "operations.h"
-#define OPCODE_OFFSET 18
-#define FUNCT_OFFSET 3
-#define DEST_REG_OFFSET 8
-#define SRC_REG_OFFSET 13
-#define ADD_MTD_SRC_OFFSET 16
-#define ADD_MTD_DEST_OFFSET 11
-#define IMMEDIATE_OFFSET 3
-#define A_OFFSET 2
-#define R_OFFSET 1
-#define E_OFFSET 0
 
 typedef struct BinaryLine
 {
@@ -22,6 +12,7 @@ typedef struct BinaryLine
     /*unsigned int code[MAX_OPERANDS + 1]; 0 for operation, 1 for first operand, 2 for second operand*/
     unsigned int *code;
     int num_of_lines;
+    int sourcecode_line_number;
 } BinaryLine;
 
 typedef struct BinaryNode
@@ -30,13 +21,14 @@ typedef struct BinaryNode
     struct BinaryNode *next;
 } BinaryNode;
 
-BinaryLine code_binary(int *IC, char *line);
-BinaryLine data_binary(int *DC, char *line);
+BinaryLine code_binary(int *IC, char *line, int sourcecode_line_number);
+BinaryLine data_binary(int *DC, char *line, int sourcecode_line_number);
 
 BinaryNode *init_binary_image();
 int add_binary_line(BinaryLine binaryLine, BinaryNode *head);
 void free_binary_image(BinaryNode *head);
 void print_binary_image(BinaryNode *head);
+BinaryLine *find_by_line_number(BinaryNode *head, int line_number);
 
 #include "firstpass.h"
 

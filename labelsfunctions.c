@@ -17,7 +17,7 @@ Label *find_label(Label *head, char *name)
     Label *temp = head;
     while (temp != NULL)
     {
-        if (strcmp(temp->name, name) == 0)
+        if ((temp->name != NULL) && (strcmp(temp->name, name) == 0))
             return temp;
         temp = temp->next;
     }

@@ -69,9 +69,23 @@ void print_binary_image(BinaryNode *head)
     }
 }
 
-BinaryLine code_binary(int *IC, char *line)
+BinaryLine *find_by_line_number(BinaryNode *head, int line_number)
 {
-    BinaryLine binaryLine = {0, 0, 0};
+    BinaryNode *current = head->next;
+    while (current != NULL)
+    {
+        if (current->line->sourcecode_line_number == line_number)
+        {
+            return current->line;
+        }
+        current = current->next;
+    }
+    return NULL;
+}
+
+BinaryLine code_binary(int *IC, char *line, int sourcecode_line_number)
+{
+    BinaryLine binaryLine = {0, 0, 0, 0};
     Operation *operation = NULL;
     char line_original[MAX_LINE] = {0};
     char *word = NULL;
@@ -80,6 +94,7 @@ BinaryLine code_binary(int *IC, char *line)
     strcpy(line_original, line);
     binaryLine.address = *IC;
     binaryLine.num_of_lines = 1;
+    binaryLine.sourcecode_line_number = sourcecode_line_number;
     /*binaryLine.code = 0;*/
     binaryLine.code = (unsigned int *)malloc(sizeof(unsigned int) * MAX_OPERANDS + 1);
     if (!binaryLine.code)
@@ -201,7 +216,7 @@ void add_line_for_immidiate(char *operand, BinaryLine *binaryLine)
     int num = atoi(operand + 1); /*Avoid # at start of immidiate operand number*/
     if (binaryLine->num_of_lines <= MAX_OPERANDS)
     {
-        binaryLine->code[binaryLine->num_of_lines] |= num << IMMEDIATE_OFFSET;
+        binaryLine->code[binaryLine->num_of_lines] |= num << ARE_OFFSET;
         binaryLine->code[binaryLine->num_of_lines] |= 1U << A_OFFSET; /*Set A bit to 1 - Absolute*/
         binaryLine->num_of_lines++;                                   /*Increment number of lines*/
     }
@@ -216,9 +231,9 @@ void add_empty_line(BinaryLine *binaryLine)
     }
 }
 
-BinaryLine data_binary(int *DC, char *line)
+BinaryLine data_binary(int *DC, char *line, int sourcecode_line_number)
 {
-    BinaryLine binaryLine = {0, 0, 0};
+    BinaryLine binaryLine = {0, 0, 0, 0};
     char line_original[MAX_LINE] = {0};
     char *word = NULL;
     int i = 0;
@@ -227,6 +242,7 @@ BinaryLine data_binary(int *DC, char *line)
     strcpy(line_original, line);
     binaryLine.address = *DC;
     binaryLine.num_of_lines = 0;
+    binaryLine.sourcecode_line_number = sourcecode_line_number;
     /*binaryLine.code = 0;*/
 
     word = strtok(line, " \t\n");
@@ -253,7 +269,7 @@ BinaryLine data_binary(int *DC, char *line)
         {
             binaryLine.code[i] = (unsigned char)word[i]; /*Stores ascii value of word[i]*/
         }
-        binaryLine.code[binaryLine.num_of_lines - 1] = 'A';
+        binaryLine.code[binaryLine.num_of_lines - 1] = '\0';
     }
     else if (strcmp(word, ".data") == 0)
     {

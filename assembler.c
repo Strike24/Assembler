@@ -27,6 +27,12 @@ int main(int argc, char *argv[])
             printf("Error: assembler failed\n");
             return 1;
         }
+
+        if (second_pass(argv[i], code_image, data_image, label_list) == ERROR)
+        {
+            printf("Error: assembler failed\n");
+            return 1;
+        }
     }
 
     free_binary_image(code_image);

@@ -5,5 +5,6 @@
 #include <stdlib.h>
 #include "preasm.h"
 #include "firstpass.h"
+#include "secondpass.h"
 
 #endif

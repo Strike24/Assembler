@@ -94,6 +94,10 @@ OperandType *get_allowed_addressing_methods(char *name, int source_or_target)
 
 int is_data_operation(char *word)
 {
+    if (word == NULL)
+    {
+        return FALSE;
+    }
     /*Check if word is .data or .string which is a data operation*/
     if ((strcmp(word, ".data") == 0) || (strcmp(word, ".string") == 0))
     {
@@ -104,6 +108,10 @@ int is_data_operation(char *word)
 
 int is_extern_operation(char *word)
 {
+    if (word == NULL)
+    {
+        return FALSE;
+    }
     /*Check if word is .extern which is an extern operation*/
     if (strcmp(word, ".extern") == 0)
     {
@@ -114,6 +122,10 @@ int is_extern_operation(char *word)
 
 int is_entry_operation(char *word)
 {
+    if (word == NULL)
+    {
+        return FALSE;
+    }
     /*Check if word is .entry which is an entry operation*/
     if (strcmp(word, ".entry") == 0)
     {
@@ -124,6 +136,10 @@ int is_entry_operation(char *word)
 
 int is_code_operation(char *word)
 {
+    if (word == NULL)
+    {
+        return FALSE;
+    }
     /*Check if word is a valid code operation name*/
     /*Searches if word is found in the code operations table*/
     return is_operation_name(word);
@@ -131,10 +147,14 @@ int is_code_operation(char *word)
 
 int is_label_dec(char *word_original)
 {
+    char *word = NULL;
+    char *colon = NULL;
+    if (word_original == NULL)
+    {
+        return FALSE;
+    }
     /*Copy word to new string to avoid strtok changes*/
-    char *word = (char *)malloc(strlen(word_original) + 1);
-    char *colon;
-
+    word = (char *)malloc(strlen(word_original) + 1);
     strcpy(word, word_original);
     colon = strchr(word, ':');
     if (colon == NULL) /*Check if : are existent*/
@@ -167,6 +187,10 @@ int is_label_dec(char *word_original)
 int is_legal_label_name(char *word)
 {
     int i;
+    if (word == NULL)
+    {
+        return FALSE;
+    }
     /*Check maximum length of label*/
     if (strlen(word) > 31)
     {
@@ -201,6 +225,10 @@ int is_legal_label_name(char *word)
 
 int is_reserved_word(char *word)
 {
+    if (word == NULL)
+    {
+        return FALSE;
+    }
     /*Check if word is a reserved word by checking if it's a code, data, extern,
      entry operation or a register name \ macro name*/
     if (is_code_operation(word))
@@ -232,8 +260,11 @@ int is_reserved_word(char *word)
 
 int validate_data(char *word)
 {
-    /*char *endptr; Used for strtol to check if word is a number*/
     int res = FALSE;
+    if (word == NULL)
+    {
+        return FALSE;
+    }
     word = strtok(word, ",");
     while (word != NULL)
     {
@@ -269,6 +300,10 @@ int validate_data(char *word)
 
 int validate_string(char *word)
 {
+    if (word == NULL)
+    {
+        return FALSE;
+    }
     /*Check if word is a string*/
     if (word[0] != '"')
     {
@@ -289,6 +324,7 @@ int validate_string(char *word)
 
 int is_integer(char *str, int len)
 {
+
     int i = 0;
     if (str == NULL)
         return 0;
