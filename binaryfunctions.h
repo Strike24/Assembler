@@ -19,6 +19,7 @@ typedef struct BinaryNode
 {
     BinaryLine *line;
     struct BinaryNode *next;
+    struct BinaryNode *prev;
 } BinaryNode;
 
 BinaryLine code_binary(int *IC, char *line, int sourcecode_line_number);

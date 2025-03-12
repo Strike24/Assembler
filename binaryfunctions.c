@@ -13,6 +13,7 @@ BinaryNode *init_binary_image()
     }
     head->line = NULL;
     head->next = NULL;
+    head->prev = NULL;
     return head;
 }
 
@@ -30,8 +31,15 @@ int add_binary_line(BinaryLine binaryLine, BinaryNode *head)
         return ERROR;
     }
     memcpy(newNode->line, &binaryLine, sizeof(BinaryLine));
-    newNode->next = head->next;
+    newNode->next = head->next; /*Insert at start of list, after head*/
+    newNode->prev = head;
+    if (head->next != NULL)
+    {
+        head->next->prev = newNode;
+    }
+
     head->next = newNode;
+
     return 0;
 }
 

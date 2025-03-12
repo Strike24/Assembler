@@ -191,18 +191,27 @@ int build_output_files(char *filename, BinaryNode *code_image, BinaryNode *data_
     }
 
     fprintf(ob_file, "%7d %-6d\n", ICF, DCF);
-    while (current_node != NULL)
+    current_node = code_image;
+    while (current_node->next != NULL)
     {
-        print_line_ob(ob_file, current_node->line);
         current_node = current_node->next;
     }
-    current_node = data_image;
-    while (current_node != NULL)
+    while (current_node != code_image)
     {
         print_line_ob(ob_file, current_node->line);
-        current_node = current_node->next;
+        current_node = current_node->prev;
     }
 
+    current_node = data_image;
+    while (current_node->next != NULL)
+    {
+        current_node = current_node->next;
+    }
+    while (current_node != data_image)
+    {
+        print_line_ob(ob_file, current_node->line);
+        current_node = current_node->prev;
+    }
     fclose(ob_file);
 
     current_label = label_list;
