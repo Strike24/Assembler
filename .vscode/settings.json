@@ -17,6 +17,7 @@
         "operations.h": "c",
         "ctype.h": "c",
         "reservedwords.h": "c",
-        "binaryfunctions.h": "c"
+        "binaryfunctions.h": "c",
+        "secondpass.h": "c"
     }
 }
