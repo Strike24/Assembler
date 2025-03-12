@@ -5,10 +5,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-void add_extension(char *filename, char *extension);
-
-int check_extension(char *filename, char *extension);
-void replace_extension(char *filename, char *extension);
+/*A function that handles file opening with different modes and extensions.
+Returns pointer to the create file*/
+/*TODO: MOVE TO DIFFERENT FILE*/
 FILE *open_file(char *filename, char *mode, char *ext);
 
 #endif
