@@ -6,6 +6,8 @@ int main(int argc, char *argv[])
     BinaryNode *data_image = init_binary_image();
     Label *label_list = init_label_table();
     int i;
+    int IC = 100;
+    int DC = 0;
 
     if (argc < 2)
     {
@@ -14,21 +16,19 @@ int main(int argc, char *argv[])
     }
     for (i = 1; i < argc; i++)
     {
-        /*
         if (pre_assembler(argv[i]) == ERROR)
         {
             printf("Error: pre assmebler failed\n");
             return 1;
         }
-            */
 
-        if (first_pass(argv[i], code_image, data_image, label_list) == ERROR)
+        if (first_pass(argv[i], code_image, data_image, label_list, &IC, &DC) == ERROR)
         {
             printf("Error: assembler failed\n");
             return 1;
         }
 
-        if (second_pass(argv[i], code_image, data_image, label_list) == ERROR)
+        if (second_pass(argv[i], code_image, data_image, label_list, IC, DC) == ERROR)
         {
             printf("Error: assembler failed\n");
             return 1;

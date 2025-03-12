@@ -105,6 +105,7 @@ BinaryLine code_binary(int *IC, char *line, int sourcecode_line_number)
     binaryLine.sourcecode_line_number = sourcecode_line_number;
     /*binaryLine.code = 0;*/
     binaryLine.code = (unsigned int *)malloc(sizeof(unsigned int) * MAX_OPERANDS + 1);
+    memset(binaryLine.code, 0, sizeof(unsigned int) * MAX_OPERANDS + 1);
     if (!binaryLine.code)
     {
         printf("Error: Memory allocation failed\n");
@@ -143,11 +144,11 @@ BinaryLine code_binary(int *IC, char *line, int sourcecode_line_number)
             add_line_for_immidiate(word, &binaryLine);
             break;
         case DIRECT:
-            binaryLine.code[binaryLine.num_of_lines - 1] |= DIRECT << ADD_MTD_DEST_OFFSET;
+            binaryLine.code[binaryLine.num_of_lines - 1] |= DIRECT << ADD_MTD_SRC_OFFSET;
             add_empty_line(&binaryLine);
             break;
         case RELATIVE:
-            binaryLine.code[binaryLine.num_of_lines - 1] |= RELATIVE << ADD_MTD_DEST_OFFSET;
+            binaryLine.code[binaryLine.num_of_lines - 1] |= RELATIVE << ADD_MTD_SRC_OFFSET;
             add_empty_line(&binaryLine);
             break;
         default:
@@ -165,7 +166,7 @@ BinaryLine code_binary(int *IC, char *line, int sourcecode_line_number)
             binaryLine.code[OPERATION_LINE_INDEX] |= get_code_for_register(word, FALSE);
             break;
         case IMMEDIATE:
-            binaryLine.code[OPERATION_LINE_INDEX] |= IMMEDIATE << ADD_MTD_SRC_OFFSET;
+            binaryLine.code[OPERATION_LINE_INDEX] |= IMMEDIATE << ADD_MTD_DEST_OFFSET;
             add_line_for_immidiate(word, &binaryLine);
             break;
         case DIRECT:
@@ -286,6 +287,7 @@ BinaryLine data_binary(int *DC, char *line, int sourcecode_line_number)
         trim(word);
         num_of_integers = get_number_of_integers(word);
         binaryLine.code = (unsigned int *)malloc(sizeof(unsigned int) * num_of_integers + 1);
+        memset(binaryLine.code, 0, sizeof(unsigned int) * num_of_integers + 1);
         if (!binaryLine.code || num_of_integers == ERROR)
         {
             printf("Error: Memory allocation failed\n");

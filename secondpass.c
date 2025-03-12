@@ -1,6 +1,6 @@
 #include "secondpass.h"
 
-int second_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, Label *label_list)
+int second_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, Label *label_list, int ICF, int DCF)
 {
     FILE *input_file;
     char line[MAX_LINE];
@@ -26,7 +26,7 @@ int second_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, 
             if (is_label_dec(word)) /*If label declaration found, skip to next word*/
             {
                 word = strtok(NULL, " \t\n");
-                word = strtok(NULL, "");
+                /*word = strtok(NULL, "");*/
             }
 
             if (is_entry_operation(word))
@@ -53,7 +53,8 @@ int second_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, 
         line_number++;
     }
 
-    build_output_files(filename, code_image, data_image, label_list, 100, 50);
+    align_memory_to_bits(code_image, data_image);
+    build_output_files(filename, code_image, data_image, label_list, ICF, DCF);
     fclose(input_file);
     return 0;
 }
@@ -71,8 +72,9 @@ int fill_missing_label_info(BinaryNode *code_image, Label *label_list, char *lin
     {
         return ERROR;
     }
+    trim(line);
     word = strtok(line, ",");
-    trim(word);
+    /*trim(word);*/
 
     while (word != NULL && i < current_line->num_of_lines)
     {
@@ -130,11 +132,11 @@ int fill_missing_label_info(BinaryNode *code_image, Label *label_list, char *lin
                     current_line->code[j] |= (current_label->address) << ARE_OFFSET;
                     break;
                 }
-                else if (i == current_line->num_of_lines - 1)
-                {
-                    printf("Error: Label address already filled\n");
-                    return ERROR;
-                }
+                /*  else if (i == current_line->num_of_lines - 1)
+                  {
+                      printf("Error: Label address already filled\n");
+                      return ERROR;
+                  }*/
             }
         }
 
@@ -190,7 +192,7 @@ int build_output_files(char *filename, BinaryNode *code_image, BinaryNode *data_
         current_label = current_label->next;
     }
 
-    fprintf(ob_file, "%7d %-6d\n", ICF, DCF);
+    fprintf(ob_file, "%7d %-6d\n", ICF - 100, DCF);
     current_node = code_image;
     while (current_node->next != NULL)
     {
@@ -198,7 +200,7 @@ int build_output_files(char *filename, BinaryNode *code_image, BinaryNode *data_
     }
     while (current_node != code_image)
     {
-        print_line_ob(ob_file, current_node->line);
+        print_line_ob(ob_file, current_node->line, 0);
         current_node = current_node->prev;
     }
 
@@ -209,7 +211,7 @@ int build_output_files(char *filename, BinaryNode *code_image, BinaryNode *data_
     }
     while (current_node != data_image)
     {
-        print_line_ob(ob_file, current_node->line);
+        print_line_ob(ob_file, current_node->line, ICF);
         current_node = current_node->prev;
     }
     fclose(ob_file);
@@ -246,7 +248,7 @@ int build_output_files(char *filename, BinaryNode *code_image, BinaryNode *data_
     return 0;
 }
 
-int print_line_ob(FILE *ob_file, BinaryLine *current_node)
+int print_line_ob(FILE *ob_file, BinaryLine *current_node, int starting_index)
 {
     int i = 0;
     if (current_node == NULL)
@@ -255,7 +257,45 @@ int print_line_ob(FILE *ob_file, BinaryLine *current_node)
     }
     for (i = 0; i < current_node->num_of_lines; i++)
     {
-        fprintf(ob_file, "%07d %04X\n", current_node->address + i, current_node->code[i]);
+        fprintf(ob_file, "%07d %06x\n", current_node->address + i + starting_index, current_node->code[i]);
+    }
+    return 0;
+}
+
+int align_memory_to_bits(BinaryNode *code_image, BinaryNode *data_image)
+{
+    BinaryNode *current_node = code_image;
+    BinaryLine *current_line;
+    int i = 0;
+    while (current_node->next != NULL)
+    {
+        if (current_node->line == NULL)
+        {
+            current_node = current_node->next;
+            continue;
+        }
+        current_line = current_node->line;
+        for (i = 0; i < current_line->num_of_lines; i++)
+        {
+            current_line->code[i] &= BITS_MASK;
+        }
+        current_node = current_node->next;
+    }
+
+    current_node = data_image;
+    while (current_node->next != NULL)
+    {
+        if (current_node->line == NULL)
+        {
+            current_node = current_node->next;
+            continue;
+        }
+        current_line = current_node->line;
+        for (i = 0; i < current_line->num_of_lines; i++)
+        {
+            current_line->code[i] &= BITS_MASK;
+        }
+        current_node = current_node->next;
     }
     return 0;
 }

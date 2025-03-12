@@ -37,7 +37,6 @@ int macro_expansion(FILE *input_file, FILE *output_file)
 
     while (fgets(line, MAX_LINE, input_file))
     {
-        printf("%s", line);
         strcpy(line_copy, line);
         word = strtok(line, " \t\n");
         if (is_label_dec(word)) /*If label is found, turn on flag, skip to next word*/
@@ -101,7 +100,6 @@ int macro_expansion(FILE *input_file, FILE *output_file)
             }
         }
     }
-    print_macro_table(head);
     free_macro_table(head);
     return 0;
 }

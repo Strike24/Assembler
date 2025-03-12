@@ -1,10 +1,8 @@
 #include "firstpass.h"
 
-int first_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, Label *label_list)
+int first_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, Label *label_list, int *IC, int *DC)
 {
     FILE *input_file;
-    int IC = 100;
-    int DC = 0;
     char line[MAX_LINE];
     /* TODO: NOT SURE is_label IS REQUIRED HERE, CAN MAYBE BE ONLY IN parse_line*/
     int is_label = FALSE;
@@ -22,7 +20,7 @@ int first_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, L
     /*Read line by line, send each line for parsing*/
     while (fgets(line, MAX_LINE, input_file))
     {
-        parse_line(line, &IC, &DC, line_number, &is_label, code_image, data_image, label_list);
+        parse_line(line, IC, DC, line_number, &is_label, code_image, data_image, label_list);
         line_number++;
     }
 
@@ -30,7 +28,7 @@ int first_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, L
     /*print_binary_image(code_image);*/
 
     /*Update addresses for data labels by adding IC*/
-    update_data_addresses(label_list, IC);
+    update_data_addresses(label_list, *IC);
     fclose(input_file);
     return 0;
 }
@@ -67,7 +65,12 @@ int parse_line(char *line, int *IC, int *DC, int line_number, int *is_label, Bin
         }
         else
         {
-            add_label(label_list, word, *IC, symbol);
+            if (symbol == CODE)
+                add_label(label_list, word, *IC, symbol);
+            else if (symbol == DATA)
+            {
+                add_label(label_list, word, *DC, symbol);
+            }
         }
         word = strtok(NULL, "");
         *is_label = FALSE;

@@ -13,7 +13,7 @@
 #include <ctype.h>
 
 /*Main first pass function. reads file after preasm and sends each line for parsing*/
-int first_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, Label *label_list);
+int first_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, Label *label_list, int *IC, int *DC);
 
 /*Parses line and updates IC, DC, label list and label indicator.
 Addes to data and code images*/
