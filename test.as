@@ -1,4 +1,4 @@
-COOL:       prn #48
+COOL:       prn #49
 MAIN:       add r3, LIST
 LOOP:       prn #48
 HELLO:      mcro a_mc

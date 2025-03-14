@@ -97,7 +97,7 @@ int fill_missing_label_info(BinaryNode *code_image, Label *label_list, char *lin
         current_label = find_label(label_list, word);
         if (current_label == NULL)
         {
-            printf("Error: Unknown label name \"%s\"\n", word);
+            handle_line_error(ERROR_LABEL_NOT_DEFINED, line_number, word);
             return ERROR;
         }
 
@@ -172,7 +172,7 @@ int build_output_files(char *filename, BinaryNode *code_image, BinaryNode *data_
         ob_file = open_file(filename, "w", OB_EXT);
         if (ob_file == NULL)
         {
-            printf("Error: Failed to create .ob file\n");
+
             return ERROR;
         }
     }
@@ -184,7 +184,6 @@ int build_output_files(char *filename, BinaryNode *code_image, BinaryNode *data_
             ent_file = open_file(filename, "w", ENT_EXT);
             if (ent_file == NULL)
             {
-                printf("Error: Failed to create .ent file\n");
                 return ERROR;
             }
             is_ent_file = TRUE;
@@ -194,7 +193,6 @@ int build_output_files(char *filename, BinaryNode *code_image, BinaryNode *data_
             ext_file = open_file(filename, "w", EXT_EXT);
             if (ext_file == NULL)
             {
-                printf("Error: Failed to create .ext file\n");
                 return ERROR;
             }
             is_ext_file = TRUE;
@@ -263,6 +261,7 @@ int build_output_files(char *filename, BinaryNode *code_image, BinaryNode *data_
         fclose(ext_file);
     }
 
+    printf("* No errors found in the assembly process, building output files. *\n");
     return 0;
 }
 

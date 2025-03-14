@@ -5,6 +5,7 @@
 #include "defs.h"
 #include "filefunctions.h"
 #include "labelsfunctions.h"
+#include "errors.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

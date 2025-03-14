@@ -1,6 +1,7 @@
 #ifndef FILEFUNCTIONS_H
 #define FILEFUNCTIONS_H
 
+#include "errors.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -9,5 +10,6 @@
 Returns pointer to the create file*/
 /*TODO: MOVE TO DIFFERENT FILE*/
 FILE *open_file(char *filename, char *mode, char *ext);
+void remove_file(char *filename, char *ext);
 
 #endif

@@ -7,6 +7,7 @@
 #include "labelsfunctions.h"
 #include "operations.h"
 #include "macrofunctions.h"
+#include "errors.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

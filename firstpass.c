@@ -13,14 +13,22 @@ int first_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, L
 
     if (input_file == NULL)
     {
-        printf("Error: File not found\n");
+        /*EXITING AND MOVING TO NEXT FILE*/
         return ERROR;
     }
 
     /*Read line by line, send each line for parsing*/
     while (fgets(line, MAX_LINE, input_file))
     {
-        parse_line(line, IC, DC, line_number, &is_label, code_image, data_image, label_list);
+        /*if line is longer than 80 charcthers (not including \0) and fgets cut it, handle error*/
+        if (line[strlen(line) - 1] != '\n' && !feof(input_file))
+        {
+            handle_line_error(ERROR_LINE_TOO_LONG, line_number, MAX_LINE_STRING);
+        }
+        else
+        {
+            parse_line(line, IC, DC, line_number, &is_label, code_image, data_image, label_list);
+        }
         line_number++;
     }
 
@@ -47,7 +55,7 @@ int parse_line(char *line, int *IC, int *DC, int line_number, int *is_label, Bin
 
     if (line[0] == ';') /*If line is a comment, skip it*/
     {
-        return TRUE;
+        return 0; /*Read next line*/
     }
 
     /*Validate line and get operation type*/
@@ -60,8 +68,7 @@ int parse_line(char *line, int *IC, int *DC, int line_number, int *is_label, Bin
         word[strlen(word) - 1] = '\0';
         if (symbol == EXTERNAL || symbol == ENTRY)
         {
-            printf("Warning: Label cannot be decleared before .extern / .entry.\nLabel will be ignored.\n");
-            printf("\t%s\n", line);
+            handle_line_warning(IGNORED_LABEL, line_number, word);
         }
         else
         {
@@ -95,13 +102,9 @@ int parse_line(char *line, int *IC, int *DC, int line_number, int *is_label, Bin
             /*.entry will be handled at the second pass.*/
             break;
         default:
-            printf("Error: Invalid line format\n\t%s\n", line);
+            handleError(ERROR_INVALID_OPERATION_TYPE);
             break;
         }
-    }
-    else
-    {
-        printf("Error: Invalid line format\n\t%s\n", line);
     }
 
     return TRUE;
@@ -171,7 +174,8 @@ LabelType validate_line(char *line, int *is_valid, int *is_label)
     else
     {
         *is_valid = FALSE;
-        return ERROR;
+        handleError(ERROR_INVALID_OPERATION_TYPE);
+        return INVALID_TYPE;
     }
 }
 /*trim all whitespaces from char* */

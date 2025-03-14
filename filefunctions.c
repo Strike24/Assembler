@@ -10,7 +10,7 @@ FILE *open_file(char *filename, char *mode, char *ext)
 
     if (ext_filename == NULL)
     {
-        printf("Error: Memory allocation failed\n");
+        handleError(ERROR_MEMORY_ALLOCATION_FAILED);
         return NULL;
     }
     strcpy(ext_filename, filename);
@@ -22,9 +22,34 @@ FILE *open_file(char *filename, char *mode, char *ext)
 
     if (file == NULL)
     {
-        printf("Error: File not found\n");
+        if (strcmp(mode, "r") == 0)
+        {
+            handleError(ERROR_FILE_NOT_FOUND);
+        }
+        else
+        {
+            handleError(ERROR_FILE_OPEN_FAILED);
+        }
         return NULL;
     }
 
     return file;
+}
+
+void remove_file(char *filename, char *ext)
+{
+    char *ext_filename = (char *)malloc(strlen(filename) + strlen(ext) + 1);
+    memset(ext_filename, 0, strlen(filename) + strlen(ext) + 1);
+
+    if (ext_filename == NULL)
+    {
+        handleError(ERROR_MEMORY_ALLOCATION_FAILED);
+        return;
+    }
+    strcpy(ext_filename, filename);
+    strcat(ext_filename, ext);
+
+    remove(ext_filename);
+
+    free(ext_filename);
 }

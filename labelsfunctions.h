@@ -4,11 +4,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "errors.h"
 #include "defs.h"
 
 /*Enum that represents the types of labels*/
 typedef enum
 {
+    INVALID_TYPE = -1,
     CODE,
     DATA,
     EXTERNAL,

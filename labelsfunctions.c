@@ -5,6 +5,7 @@ Label *init_label_table()
     Label *head = (Label *)malloc(sizeof(Label));
     if (!head)
     {
+        handleError(ERROR_MEMORY_ALLOCATION_FAILED);
         return NULL;
     }
     head->name = NULL;
@@ -18,6 +19,7 @@ ExternLabel *init_extern_label_table()
     ExternLabel *head = (ExternLabel *)malloc(sizeof(ExternLabel));
     if (!head)
     {
+        handleError(ERROR_MEMORY_ALLOCATION_FAILED);
         return NULL;
     }
     head->label = NULL;
@@ -34,6 +36,7 @@ int add_extern_label(ExternLabel *head, Label *label, int address)
     newLabel = (ExternLabel *)malloc(sizeof(ExternLabel));
     if (!newLabel || !label || head == NULL)
     {
+        handleError(ERROR_MEMORY_ALLOCATION_FAILED);
         return ERROR;
     }
     newLabel->label = label;
@@ -75,18 +78,21 @@ int add_label(Label *head, char *name, int address, LabelType type)
     Label *newLabel;
     if (find_label(head, name) != NULL)
     {
+        handleError(ERROR_LABEL_ALREADY_EXISTS);
         return ERROR;
     }
 
     newLabel = (Label *)malloc(sizeof(Label));
     if (!newLabel)
     {
+        handleError(ERROR_MEMORY_ALLOCATION_FAILED);
         return ERROR;
     }
     newLabel->name = (char *)malloc(strlen(name) + 1);
     if (!newLabel->name)
     {
         free(newLabel);
+        handleError(ERROR_MEMORY_ALLOCATION_FAILED);
         return ERROR;
     }
     strcpy(newLabel->name, name);
