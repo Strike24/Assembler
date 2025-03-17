@@ -145,7 +145,7 @@ int is_code_operation(char *word)
     return is_operation_name(word);
 }
 
-int is_label_dec(char *word_original)
+int is_label_dec(char *word_original, int line_number)
 {
     char *word = NULL;
     char *colon = NULL;
@@ -174,7 +174,7 @@ int is_label_dec(char *word_original)
     }
 
     /*Check if label name is valid*/
-    if (!is_legal_label_name(word))
+    if (!is_legal_label_name(word, line_number))
     {
         free(word);
         return FALSE;
@@ -184,22 +184,25 @@ int is_label_dec(char *word_original)
     return TRUE;
 }
 
-int is_legal_label_name(char *word)
+int is_legal_label_name(char *word, int line_number)
 {
     int i;
     if (word == NULL)
     {
+        handle_line_error(ERROR_LABEL_EMPTY_NAME, line_number, word);
         return FALSE;
     }
     /*Check maximum length of label*/
-    if (strlen(word) > 31)
+    if (strlen(word) > MAX_LABEL)
     {
+        handle_line_error(ERROR_LABEL_NAME_TOO_LONG, line_number, word);
         return FALSE;
     }
 
     /*Check if label starts with alphabatic letter*/
     if (!isalpha(word[0]))
     {
+        handle_line_error(ERROR_LABEL_INVALID_START, line_number, word);
         return FALSE;
     }
 
@@ -211,12 +214,16 @@ int is_legal_label_name(char *word)
             if ((i == strlen(word) - 1) && (word[i] == '\n'))
                 return TRUE;
             else
+            {
+                handle_line_error(ERROR_LABEL_NOT_ALPHANUMERIC, line_number, word);
                 return FALSE;
+            }
         }
     }
     /*Check if label is a reserved word*/
     if (is_reserved_word(word))
     {
+        handle_line_error(ERROR_LABEL_RESERVED_WORD, line_number, word);
         return FALSE;
     }
 
@@ -258,7 +265,7 @@ int is_reserved_word(char *word)
     return FALSE;
 }
 
-int validate_data(char *word)
+int validate_data(char *word, int line_number)
 {
     int res = FALSE;
     if (word == NULL)
@@ -269,26 +276,10 @@ int validate_data(char *word)
     while (word != NULL)
     {
         res = TRUE;
-        /*
-        if ((word[0] != '+') && (word[0] != '-') && (!isdigit(word[0])) && (word[0] != ' ') && (word[0] != '\t'))
-        {
-            return FALSE;
-        }
-
-        strtol(word, &endptr, BASE_10);
-        if (endptr == word)
-        {
-            return FALSE;
-        }
-        else if (*endptr != '\0')
-        {
-            printf("%s\n", endptr);
-            return FALSE;
-        }
-        */
 
         if (!is_integer(word, strlen(word)))
         {
+            handle_line_error(ERROR_INVALID_NUMBER, line_number, word);
             res = FALSE;
             return res;
         }
@@ -298,7 +289,7 @@ int validate_data(char *word)
     return res;
 }
 
-int validate_string(char *word)
+int validate_string(char *word, int line_number)
 {
     if (word == NULL)
     {
@@ -307,6 +298,7 @@ int validate_string(char *word)
     /*Check if word is a string*/
     if (word[0] != '"')
     {
+        handle_line_error(ERROR_INVALID_STRING, line_number, word);
         return FALSE;
     }
     word++;
@@ -314,6 +306,7 @@ int validate_string(char *word)
     {
         if (word[0] == '\0')
         {
+            handle_line_error(ERROR_INVALID_STRING, line_number, word);
             return FALSE;
         }
 
@@ -361,7 +354,7 @@ int is_integer(char *str, int len)
     return str[0] == '\0';
 }
 
-int validate_extern(char *word)
+int validate_extern(char *word, int line_number)
 {
     word = strtok(word, " ");
     if (word == NULL)
@@ -370,13 +363,15 @@ int validate_extern(char *word)
         return FALSE;
     }
 
-    if (!is_legal_label_name(word))
+    /*
+    if (!is_legal_label_name(word, line_number))
     {
         return FALSE;
     }
+        */
     return TRUE;
 }
-int validate_entry(char *word)
+int validate_entry(char *word, int line_number)
 {
     word = strtok(word, " ");
     if (word == NULL)
@@ -385,15 +380,17 @@ int validate_entry(char *word)
         return FALSE;
     }
 
+    /*
     if (!is_legal_label_name(word))
     {
         return FALSE;
     }
+        */
 
     return TRUE;
 }
 
-int validate_code(char *operation, char *oprands)
+int validate_code(char *operation, char *oprands, int line_number)
 {
 
     OperandType *allowed_source_methods;
@@ -405,19 +402,25 @@ int validate_code(char *operation, char *oprands)
     allowed_source_methods = get_allowed_addressing_methods(operation, SOURCE);
     allowed_target_methods = get_allowed_addressing_methods(operation, TARGET);
 
+    if (allowed_source_methods == NULL || allowed_target_methods == NULL)
+    {
+        return FALSE;
+    }
     oprands = strtok(oprands, ",");
 
     if (allowed_source_methods[0] != NONE)
     {
         if (oprands == NULL)
         {
-            /*Error: No oprands found, but needed*/
-            printf("No oprands found, but needed for stop\n");
+            /*Error: No oprands found, but needed for command*/
+            handle_line_error(ERROR_INVALID_AMOUNT_OF_OPERANDS, line_number, operation);
             return FALSE;
         }
         current_oprand_type = get_operand_type(oprands);
         if (current_oprand_type == -1)
         {
+            /*Error: Operand type is not defined*/
+            handle_line_error(ERROR_INVALID_OPERAND_TYPE, line_number, oprands);
             return FALSE;
         }
         for (i = 0; allowed_source_methods[i] != -1; i++)
@@ -435,13 +438,15 @@ int validate_code(char *operation, char *oprands)
     {
         if (oprands == NULL)
         {
-            /*Error: No oprands found*/
-            printf("No oprands found, but needed for target\n");
+            /*Error: No oprands found, but needed for command*/
+            handle_line_error(ERROR_INVALID_AMOUNT_OF_OPERANDS, line_number, operation);
             return FALSE;
         }
         current_oprand_type = get_operand_type(oprands);
         if (current_oprand_type == -1)
         {
+            /*Error: Operand type is not defined*/
+            handle_line_error(ERROR_INVALID_OPERAND_TYPE, line_number, oprands);
             return FALSE;
         }
         for (i = 0; allowed_target_methods[i] != -1; i++)
@@ -453,7 +458,21 @@ int validate_code(char *operation, char *oprands)
                 break;
             }
             result = FALSE;
+            oprands = strtok(NULL, ",");
         }
+    }
+
+    if (oprands != NULL)
+    {
+        /*Error: Too many oprands*/
+        handle_line_error(ERROR_INVALID_AMOUNT_OF_OPERANDS, line_number, operation);
+        return FALSE;
+    }
+
+    if (result == FALSE)
+    {
+        /*Error: Operand type is not allowed for this command*/
+        handle_line_error(ERROR_OPERAND_NOT_ALLOWED, line_number, operation);
     }
     return result;
 }
@@ -464,17 +483,17 @@ int get_operand_type(char *word)
     {
         return IMMEDIATE;
     }
-    else if (is_direct(word))
+    else if (is_register(word))
     {
-        return DIRECT;
+        return REGISTER;
     }
     else if (is_relative(word))
     {
         return RELATIVE;
     }
-    else if (is_register(word))
+    else if (is_direct(word))
     {
-        return REGISTER;
+        return DIRECT;
     }
     return -1;
 }
@@ -493,21 +512,27 @@ int is_immediate(char *word)
 }
 int is_direct(char *word)
 {
+    /*
     if (is_legal_label_name(word))
     {
         return TRUE;
     }
-    return FALSE;
+        */
+
+    return TRUE;
 }
 int is_relative(char *word)
 {
     if (word[0] == '&')
     {
+        /*
         word++;
         if (is_legal_label_name(word))
         {
             return TRUE;
         }
+            */
+        return TRUE;
     }
     return FALSE;
 }

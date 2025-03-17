@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
         {
             is_error = first_pass(argv[i], code_image, data_image, label_list, &IC, &DC);
 
-            if (second_pass(argv[i], code_image, data_image, label_list, IC, DC) == ERROR)
+            if (second_pass(argv[i], code_image, data_image, label_list, IC, DC, is_error) == ERROR)
             {
                 printf("Second Pass Failed, Exiting Program.\n");
                 return 1;

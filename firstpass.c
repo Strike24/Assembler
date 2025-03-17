@@ -7,6 +7,7 @@ int first_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, L
     /* TODO: NOT SURE is_label IS REQUIRED HERE, CAN MAYBE BE ONLY IN parse_line*/
     int is_label = FALSE;
     int line_number = 1;
+    int is_error = FALSE;
 
     /*Open file after preassmbler macro expantion (.am)*/
     input_file = open_file(filename, "r", POST_MACRO_EXT);
@@ -27,7 +28,7 @@ int first_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, L
         }
         else
         {
-            parse_line(line, IC, DC, line_number, &is_label, code_image, data_image, label_list);
+            is_error = parse_line(line, IC, DC, line_number, &is_label, code_image, data_image, label_list);
         }
         line_number++;
     }
@@ -38,7 +39,7 @@ int first_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, L
     /*Update addresses for data labels by adding IC*/
     update_data_addresses(label_list, *IC);
     fclose(input_file);
-    return 0;
+    return is_error;
 }
 
 int parse_line(char *line, int *IC, int *DC, int line_number, int *is_label, BinaryNode *code_image, BinaryNode *data_image, Label *label_list)
@@ -59,13 +60,13 @@ int parse_line(char *line, int *IC, int *DC, int line_number, int *is_label, Bin
     }
 
     /*Validate line and get operation type*/
-    symbol = validate_line(line, &isValid, is_label);
+    symbol = validate_line(line, &isValid, is_label, line_number);
 
     /*If label was found, get the label name and skip to next word*/
     if (*is_label)
     {
         word = strtok(line_original, " \t\n");
-        word[strlen(word) - 1] = '\0';
+        word[strlen(word) - 1] = '\0'; /*Remove the ':' from the label name*/
         if (symbol == EXTERNAL || symbol == ENTRY)
         {
             handle_line_warning(IGNORED_LABEL, line_number, word);
@@ -106,11 +107,15 @@ int parse_line(char *line, int *IC, int *DC, int line_number, int *is_label, Bin
             break;
         }
     }
+    else
+    {
+        return TRUE;
+    }
 
-    return TRUE;
+    return 0;
 }
 
-LabelType validate_line(char *line, int *is_valid, int *is_label)
+LabelType validate_line(char *line, int *is_valid, int *is_label, int line_number)
 {
     char line_original[MAX_LINE];
     char *word;
@@ -119,7 +124,7 @@ LabelType validate_line(char *line, int *is_valid, int *is_label)
     strcpy(line_original, line);
     /*Get first word in line*/
     word = strtok(line_original, " \t\n");
-    if (is_label_dec(word)) /*If label declaration found, turn on flag, skip to next word*/
+    if (is_label_dec(word, line_number)) /*If label declaration found, turn on flag, skip to next word*/
     {
         *is_label = TRUE;
         word = strtok(NULL, " \t\n");
@@ -140,26 +145,27 @@ LabelType validate_line(char *line, int *is_valid, int *is_label)
 
         if (is_string)
         {
-            *is_valid = validate_string(word);
+            *is_valid = validate_string(word, line_number);
         }
         else
         {
-            *is_valid = validate_data(word);
+            *is_valid = validate_data(word, line_number);
         }
+
         return DATA;
     }
     else if (is_extern_operation(word))
     {
         word = strtok(NULL, "");
         trim(word);
-        *is_valid = validate_extern(word);
+        *is_valid = validate_extern(word, line_number);
         return EXTERNAL;
     }
     else if (is_entry_operation(word))
     {
         word = strtok(NULL, "");
         trim(word);
-        *is_valid = validate_entry(word);
+        *is_valid = validate_entry(word, line_number);
         return ENTRY;
     }
     else if (is_code_operation(word))
@@ -168,14 +174,14 @@ LabelType validate_line(char *line, int *is_valid, int *is_label)
         rest = strtok(NULL, "");
         trim(word);
         trim(rest);
-        *is_valid = validate_code(word, rest);
+        *is_valid = validate_code(word, rest, line_number);
         return CODE;
     }
     else
     {
         *is_valid = FALSE;
-        handleError(ERROR_INVALID_OPERATION_TYPE);
-        return INVALID_TYPE;
+        handle_line_error(ERROR_INVALID_OPERATION_TYPE, line_number, word);
+        return FALSE;
     }
 }
 /*trim all whitespaces from char* */

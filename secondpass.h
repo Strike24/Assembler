@@ -13,7 +13,7 @@
 
 /*Main second pass function.
 The second pass handles filling the label addresses, the .entry and .extern labels, and the building of the output files.*/
-int second_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, Label *label_list, int ICF, int DCF);
+int second_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, Label *label_list, int ICF, int DCF, int is_error);
 
 /*A function to fill missing addresses of labels in the command operands.
 Based on a given line, finds if there is a label to fill, searches for the address, and fills it in the binary code.*/

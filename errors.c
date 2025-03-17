@@ -5,10 +5,20 @@ Error errors[] = {
     {ERROR_FILE_NOT_FOUND, "File with filename \"%s\" not found in the file system.\n", 1},
     {ERROR_FILE_OPEN_FAILED, "Could not create new file.\n", 0},
     {ERROR_FILE_CLOSE_FAILED, "Could not close the file.\n", 0},
-    {ERROR_LINE_TOO_LONG, "Line exceeds maximum amount of character %s.\n", 1},
+    {ERROR_LINE_TOO_LONG, "Line exceeds maximum amount of characters %s.\n", 1},
     {ERROR_LABEL_ALREADY_EXISTS, "Label named \"%s\" already decleared.\n", 1},
     {ERROR_LABEL_NOT_DEFINED, "Label named \"%s\" is not defined.\n", 1},
-    {ERROR_INVALID_OPERATION_TYPE, "Operation \"%s\" is not a defined operation type.\n", 1}};
+    {ERROR_LABEL_NAME_TOO_LONG, "Label name \"%s\" exceeds maximum amount of 31 characters.\n", 1},
+    {ERROR_LABEL_INVALID_START, "Label name \"%s\" must start with an alphabetic character.\n", 1},
+    {ERROR_LABEL_EMPTY_NAME, "Label name cannot be empty.\n", 0},
+    {ERROR_LABEL_NOT_ALPHANUMERIC, "Label name \"%s\" must contain only alphabetic characters and digits.\n", 1},
+    {ERROR_LABEL_RESERVED_WORD, "Label name \"%s\" is a reserved word.\n", 1},
+    {ERROR_INVALID_OPERATION_TYPE, "Operation \"%s\" is not a defined operation type.\n", 1},
+    {ERROR_INVALID_NUMBER, "\"%s\" is not a valid number.\n", 1},
+    {ERROR_INVALID_STRING, "\"%s\" is not a valid string.\n", 1},
+    {ERROR_INVALID_OPERAND_TYPE, "\"%s\" is not a valid operand type.\n", 1},
+    {ERROR_INVALID_AMOUNT_OF_OPERANDS, "Invalid amount of operands for operation \"%s\".\n", 1},
+    {ERROR_OPERAND_NOT_ALLOWED, "Invalid operand type for operation \"%s\".\n", 1}};
 
 Warning warnings[] = {
     {IGNORED_LABEL, "Label cannot be decleared before .extern / .entry. \n\tLabel \"%s\" will be ignored by the assembler.\n", 1}};
@@ -58,7 +68,7 @@ void handle_line_error(ErrorCode code, int line_number, char *extra_word)
             }
             else
             {
-                printf(errors[i].message);
+                printf("%s", errors[i].message);
             }
             printf("\n");
             return;
@@ -85,7 +95,7 @@ void handle_line_warning(WarningCode code, int line_number, char *extra_word)
             }
             else
             {
-                printf(warnings[i].message);
+                printf("%s", warnings[i].message);
             }
             printf("\n");
             return;

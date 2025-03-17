@@ -1,6 +1,6 @@
 #include "secondpass.h"
 
-int second_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, Label *label_list, int ICF, int DCF)
+int second_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, Label *label_list, int ICF, int DCF, int is_error)
 {
     FILE *input_file;
     char line[MAX_LINE];
@@ -25,7 +25,7 @@ int second_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, 
         if (line[0] != ';')
         {
             word = strtok(line, " \t\n");
-            if (is_label_dec(word)) /*If label declaration found, skip to next word*/
+            if (is_label_dec(word, line_number)) /*If label declaration found, skip to next word*/
             {
                 word = strtok(NULL, " \t\n");
                 /*word = strtok(NULL, "");*/
@@ -37,8 +37,9 @@ int second_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, 
                 current_label = find_label(label_list, word);
                 if (current_label == NULL)
                 {
-                    printf("Error: .entry has an unknown label name \"\n%s\"\n", word);
+                    printf("Error: .entry has an unknown label name \"%s\"\n", word);
                     printf("Might not be declared or not exist\n");
+                    is_error = TRUE;
                 }
                 else
                 {
@@ -56,7 +57,14 @@ int second_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, 
     }
 
     align_memory_to_bits(code_image, data_image);
-    build_output_files(filename, code_image, data_image, label_list, extern_label_list, ICF, DCF);
+    if (is_error)
+    {
+        printf("\nErrors found in the assembly process, output files not built.\n");
+    }
+    else
+    {
+        build_output_files(filename, code_image, data_image, label_list, extern_label_list, ICF, DCF);
+    }
     fclose(input_file);
     free_extern_label_table(extern_label_list);
     return 0;
@@ -261,7 +269,7 @@ int build_output_files(char *filename, BinaryNode *code_image, BinaryNode *data_
         fclose(ext_file);
     }
 
-    printf("* No errors found in the assembly process, building output files. *\n");
+    printf("* No errors found in the assembly process, output files built. *\n");
     return 0;
 }
 
