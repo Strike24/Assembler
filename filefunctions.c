@@ -4,15 +4,16 @@ FILE *open_file(char *filename, char *mode, char *ext)
 {
     /*Allocates memory for a new file name that includes the extension*/
     char *ext_filename = (char *)malloc(strlen(filename) + strlen(ext) + 1);
-    FILE *file;
-    /*Initializes all to avoid garbage values*/
-    memset(ext_filename, 0, strlen(filename) + strlen(ext) + 1);
+    FILE *file = NULL;
 
     if (ext_filename == NULL)
     {
         handleError(ERROR_MEMORY_ALLOCATION_FAILED);
         return NULL;
     }
+
+    /*Initializes all to avoid garbage values*/
+    memset(ext_filename, 0, strlen(filename) + strlen(ext) + 1);
     strcpy(ext_filename, filename);
     strcat(ext_filename, ext);
 
@@ -39,13 +40,14 @@ FILE *open_file(char *filename, char *mode, char *ext)
 void remove_file(char *filename, char *ext)
 {
     char *ext_filename = (char *)malloc(strlen(filename) + strlen(ext) + 1);
-    memset(ext_filename, 0, strlen(filename) + strlen(ext) + 1);
 
     if (ext_filename == NULL)
     {
         handleError(ERROR_MEMORY_ALLOCATION_FAILED);
         return;
     }
+
+    memset(ext_filename, 0, strlen(filename) + strlen(ext) + 1);
     strcpy(ext_filename, filename);
     strcat(ext_filename, ext);
 

@@ -39,7 +39,7 @@ int macro_expansion(FILE *input_file, FILE *output_file)
     {
         strcpy(line_copy, line);
         word = strtok(line, " \t\n");
-        if (is_label_dec(word, -1)) /*If label is found, turn on flag, skip to next word*/
+        if (is_label_dec(word, -1)) /*If label is found, skip to next word*/
         {
             word = strtok(NULL, " \t\n");
         }
