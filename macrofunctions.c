@@ -13,14 +13,14 @@ MacroNode *init_macro_table()
     return head;
 }
 
-int add_content_to_macro(MacroNode *macro_node, char *content, int len)
+ErrorCode add_content_to_macro(MacroNode *macro_node, char *content, int len)
 {
     macro_node->macro->content = (char *)malloc(len + 1);
     if (!macro_node->macro->content)
     {
         free(macro_node->macro->name);
         free(macro_node->macro);
-        return ERROR;
+        return ERROR_MEMORY_ALLOCATION_FAILED;
     }
     /*
     if (!newMacro->content)
@@ -32,30 +32,41 @@ int add_content_to_macro(MacroNode *macro_node, char *content, int len)
         */
 
     strcpy(macro_node->macro->content, content);
-    return 0;
+    return SUCCESS;
 }
 
-int add_macro(MacroNode *head, char *name)
+ErrorCode add_macro(MacroNode *head, char *name)
 {
     Macro *newMacro = (Macro *)malloc(sizeof(Macro));
     MacroNode *newNode = (MacroNode *)malloc(sizeof(MacroNode));
-    if (!newMacro || !newNode)
-        return ERROR;
+    if (!newMacro)
+        return ERROR_MEMORY_ALLOCATION_FAILED;
+    if (!newNode)
+    {
+        free(newMacro);
+        return ERROR_MEMORY_ALLOCATION_FAILED;
+    }
     newMacro->name = (char *)malloc(strlen(name) + 1);
+    if (!newMacro->name)
+    {
+        free(newMacro);
+        free(newNode);
+        return ERROR_MEMORY_ALLOCATION_FAILED;
+    }
     strcpy(newMacro->name, name);
     newMacro->content = (char *)malloc(MAX_LINE * 100 * sizeof(char));
     if (!newMacro->content)
     {
         free(newMacro->name);
         free(newMacro);
-        return ERROR;
+        return ERROR_MEMORY_ALLOCATION_FAILED;
     }
     newMacro->content[0] = '\0';
 
     newNode->macro = newMacro;
     newNode->next = head->next;
     head->next = newNode;
-    return 0;
+    return SUCCESS;
 }
 
 void free_macro_table(MacroNode *head)
@@ -103,14 +114,22 @@ Macro *get_current_macro(MacroNode *head)
     return temp->macro;
 }
 
-/*DEBUG REMOVE BEFORE PUBLISHING*/
-void print_macro_table(MacroNode *head)
+ErrorCode validate_macro_name(char *name)
 {
-    MacroNode *temp = head->next;
-    while (temp != NULL)
+    if (name == NULL)
+        return ERROR_NULL_PARAM;
+    if (strlen(name) == 0)
+        return ERROR_MACRO_EMPTY_NAME;
+    if (strlen(name) > MAX_MACRO_NAME)
+        return ERROR_MACRO_NAME_TOO_LONG;
+    if (!isalpha(name[0]))
+        return ERROR_MACRO_INVALID_START;
+
+    while (*name)
     {
-        printf("\n\n--------------\nMacro name: %s\n", temp->macro->name);
-        printf("Macro content: \n%s", temp->macro->content);
-        temp = temp->next;
+        if (!isalnum(*name) && *name != '_')
+            return ERROR_MACRO_NOT_ALPHANUMERIC;
+        name++;
     }
+    return SUCCESS;
 }

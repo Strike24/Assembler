@@ -8,6 +8,7 @@ int main(int argc, char *argv[])
     int i;
     int IC = 100;
     int DC = 0;
+    int is_error = FALSE;
 
     if (argc < 2)
     {
@@ -16,22 +17,26 @@ int main(int argc, char *argv[])
     }
     for (i = 1; i < argc; i++)
     {
+        printf("----------- Processing file: \"%s\" -----------\n", argv[i]);
         if (pre_assembler(argv[i]) == ERROR)
         {
-            printf("Error: pre assmebler failed\n");
+            printf("Pre Assembler Failed, Exiting Program.\n");
+            remove_file(argv[i], POST_MACRO_EXT);
             return 1;
         }
-
-        if (first_pass(argv[i], code_image, data_image, label_list, &IC, &DC) == ERROR)
+        else
         {
-            printf("Error: assembler failed\n");
-            return 1;
-        }
+            is_error = first_pass(argv[i], code_image, data_image, label_list, &IC, &DC);
 
-        if (second_pass(argv[i], code_image, data_image, label_list, IC, DC) == ERROR)
-        {
-            printf("Error: assembler failed\n");
-            return 1;
+            if (second_pass(argv[i], code_image, data_image, label_list, IC, DC, is_error) == ERROR)
+            {
+                printf("Second Pass Failed, Exiting Program.\n");
+                return 1;
+            }
+            else
+            {
+                printf("----------- Finished processing file: \"%s\" -----------\n\n", argv[i]);
+            }
         }
     }
 

@@ -18,6 +18,8 @@
         "ctype.h": "c",
         "reservedwords.h": "c",
         "binaryfunctions.h": "c",
-        "secondpass.h": "c"
+        "secondpass.h": "c",
+        "error.h": "c",
+        "errors.h": "c"
     }
 }

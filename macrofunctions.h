@@ -3,7 +3,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include "defs.h"
+#include "errors.h"
 
 typedef struct
 {
@@ -19,7 +21,7 @@ typedef struct MacroNode
 
 MacroNode *init_macro_table();
 
-int add_macro(MacroNode *head, char *name);
+ErrorCode add_macro(MacroNode *head, char *name);
 
 void free_macro_table(MacroNode *head);
 
@@ -27,8 +29,6 @@ Macro *find_macro(MacroNode *head, char *name);
 
 Macro *get_current_macro(MacroNode *head);
 
-void print_macro_table(MacroNode *head);
-
-int is_macro(char *word);
+ErrorCode validate_macro_name(char *name);
 
 #endif

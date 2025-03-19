@@ -1,14 +1,11 @@
 .entry LIST
 .extern W
 MAIN: add r3, LIST
-mcro hello
+LOOP: prn #48
  lea W, r6
  inc r6
-mcroend
-LOOP: prn #48
-hello
  mov r3, K
- sub r1, r4
+ sub r1, r6
  bne END
  cmp K, #-6
  bne &END
@@ -21,4 +18,4 @@ STR: .string "abcd"
 LIST: .data 6, -9
  .data -100
 K: .data 31
-.extern L3
+.extern L3 

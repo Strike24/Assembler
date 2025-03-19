@@ -1,11 +1,15 @@
 #define TRUE 1
 #define FALSE 0
 #define ERROR -1
+#define ERROR_NULL_PARAM -2
 #define NUM_OF_OPERATIONS 16
 #define NUM_OF_REGISTERS 8
 #define MAX_OPERAND_TYPES 4
 #define MAX_OPERANDS 2
 #define MAX_LINE 81
+#define MAX_LINE_STRING "80"
+#define MAX_LABEL 31
+#define MAX_MACRO_NAME 31
 #define PRE_MACRO_EXT ".as"
 #define POST_MACRO_EXT ".am"
 #define OB_EXT ".ob"

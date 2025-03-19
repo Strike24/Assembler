@@ -1,6 +1,6 @@
 #include "secondpass.h"
 
-int second_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, Label *label_list, int ICF, int DCF)
+int second_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, Label *label_list, int ICF, int DCF, int is_error)
 {
     FILE *input_file;
     char line[MAX_LINE];
@@ -8,6 +8,7 @@ int second_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, 
     ExternLabel *extern_label_list = init_extern_label_table();
     Label *current_label = NULL;
     char *word = NULL;
+    ErrorObject error = {0};
 
     /*Open file after preassmbler macro expantion (.am)*/
     input_file = open_file(filename, "r", POST_MACRO_EXT);
@@ -20,12 +21,13 @@ int second_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, 
     while (fgets(line, MAX_LINE, input_file))
     {
         word = line;
+        error.code = SUCCESS;
 
         /*If line is a comment, skip it*/
         if (line[0] != ';')
         {
             word = strtok(line, " \t\n");
-            if (is_label_dec(word)) /*If label declaration found, skip to next word*/
+            if (is_label_dec(word, line_number, &error)) /*If label declaration found, skip to next word*/
             {
                 word = strtok(NULL, " \t\n");
                 /*word = strtok(NULL, "");*/
@@ -37,8 +39,9 @@ int second_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, 
                 current_label = find_label(label_list, word);
                 if (current_label == NULL)
                 {
-                    printf("Error: .entry has an unknown label name \"\n%s\"\n", word);
-                    printf("Might not be declared or not exist\n");
+                    fill_error_object(ERROR_LABEL_NOT_DEFINED, line_number, word, &error);
+                    handle_error(&error);
+                    is_error = TRUE;
                 }
                 else
                 {
@@ -48,7 +51,14 @@ int second_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, 
             else if (is_code_operation(word))
             {
                 word = strtok(NULL, "");
-                fill_missing_label_info(code_image, label_list, word, line_number, extern_label_list);
+
+                fill_missing_label_info(code_image, label_list, word, line_number, extern_label_list, &error);
+                if (error.code != SUCCESS)
+                {
+
+                    handle_error(&error);
+                    is_error = TRUE;
+                }
             }
         }
 
@@ -56,13 +66,20 @@ int second_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, 
     }
 
     align_memory_to_bits(code_image, data_image);
-    build_output_files(filename, code_image, data_image, label_list, extern_label_list, ICF, DCF);
+    if (is_error)
+    {
+        printf("\nErrors found in the assembly process, output files not built.\n");
+    }
+    else
+    {
+        build_output_files(filename, code_image, data_image, label_list, extern_label_list, ICF, DCF);
+    }
     fclose(input_file);
     free_extern_label_table(extern_label_list);
     return 0;
 }
 
-int fill_missing_label_info(BinaryNode *code_image, Label *label_list, char *line, int line_number, ExternLabel *extern_list)
+int fill_missing_label_info(BinaryNode *code_image, Label *label_list, char *line, int line_number, ExternLabel *extern_list, ErrorObject *error)
 {
     Label *current_label = NULL;
     BinaryLine *current_line = find_by_line_number(code_image, line_number);
@@ -73,7 +90,7 @@ int fill_missing_label_info(BinaryNode *code_image, Label *label_list, char *lin
 
     if (current_line == NULL)
     {
-        return ERROR;
+        return FAILURE; /*Line not found*/
     }
     trim(line);
     word = strtok(line, ",");
@@ -97,8 +114,8 @@ int fill_missing_label_info(BinaryNode *code_image, Label *label_list, char *lin
         current_label = find_label(label_list, word);
         if (current_label == NULL)
         {
-            printf("Error: Unknown label name \"%s\"\n", word);
-            return ERROR;
+            fill_error_object(ERROR_LABEL_NOT_DEFINED, line_number, word, error);
+            return FAILURE;
         }
 
         if (current_label->type == EXTERNAL)
@@ -119,7 +136,7 @@ int fill_missing_label_info(BinaryNode *code_image, Label *label_list, char *lin
                 else if (i == current_line->num_of_lines - 1)
                 {
                     printf("Error: Label address already filled\n");
-                    return ERROR;
+                    return FAILURE;
                 }
             }
         }
@@ -153,7 +170,7 @@ int fill_missing_label_info(BinaryNode *code_image, Label *label_list, char *lin
         word = strtok(NULL, " \t\n");
     }
 
-    return 0;
+    return SUCCESS;
 }
 
 int build_output_files(char *filename, BinaryNode *code_image, BinaryNode *data_image, Label *label_list, ExternLabel *extern_list, int ICF, int DCF)
@@ -172,7 +189,7 @@ int build_output_files(char *filename, BinaryNode *code_image, BinaryNode *data_
         ob_file = open_file(filename, "w", OB_EXT);
         if (ob_file == NULL)
         {
-            printf("Error: Failed to create .ob file\n");
+
             return ERROR;
         }
     }
@@ -184,7 +201,6 @@ int build_output_files(char *filename, BinaryNode *code_image, BinaryNode *data_
             ent_file = open_file(filename, "w", ENT_EXT);
             if (ent_file == NULL)
             {
-                printf("Error: Failed to create .ent file\n");
                 return ERROR;
             }
             is_ent_file = TRUE;
@@ -194,7 +210,6 @@ int build_output_files(char *filename, BinaryNode *code_image, BinaryNode *data_
             ext_file = open_file(filename, "w", EXT_EXT);
             if (ext_file == NULL)
             {
-                printf("Error: Failed to create .ext file\n");
                 return ERROR;
             }
             is_ext_file = TRUE;
@@ -263,6 +278,7 @@ int build_output_files(char *filename, BinaryNode *code_image, BinaryNode *data_
         fclose(ext_file);
     }
 
+    printf("* No errors found in the assembly process, output files built. *\n");
     return 0;
 }
 

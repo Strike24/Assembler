@@ -7,20 +7,37 @@ int first_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, L
     /* TODO: NOT SURE is_label IS REQUIRED HERE, CAN MAYBE BE ONLY IN parse_line*/
     int is_label = FALSE;
     int line_number = 1;
+    int is_error = FALSE;
+    ErrorObject error = {0};
 
     /*Open file after preassmbler macro expantion (.am)*/
     input_file = open_file(filename, "r", POST_MACRO_EXT);
 
     if (input_file == NULL)
     {
-        printf("Error: File not found\n");
+        /*EXITING AND MOVING TO NEXT FILE*/
         return ERROR;
     }
 
     /*Read line by line, send each line for parsing*/
     while (fgets(line, MAX_LINE, input_file))
     {
-        parse_line(line, IC, DC, line_number, &is_label, code_image, data_image, label_list);
+        /*if line is longer than 80 charcthers (not including \0) and fgets cut it, handle error*/
+        if (line[strlen(line) - 1] != '\n' && !feof(input_file))
+        {
+
+            fill_error_object(ERROR_LINE_TOO_LONG, line_number, MAX_LINE_STRING, &error);
+            handle_error(&error);
+            is_error = TRUE;
+
+            /*Skip chars not read on file so fgets reads a new line*/
+            while (fgetc(input_file) != '\n')
+                ;
+        }
+        else
+        {
+            is_error = (parse_line(line, IC, DC, line_number, &is_label, code_image, data_image, label_list) || is_error);
+        }
         line_number++;
     }
 
@@ -30,7 +47,7 @@ int first_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, L
     /*Update addresses for data labels by adding IC*/
     update_data_addresses(label_list, *IC);
     fclose(input_file);
-    return 0;
+    return is_error;
 }
 
 int parse_line(char *line, int *IC, int *DC, int line_number, int *is_label, BinaryNode *code_image, BinaryNode *data_image, Label *label_list)
@@ -41,27 +58,26 @@ int parse_line(char *line, int *IC, int *DC, int line_number, int *is_label, Bin
     BinaryLine binaryLine;
     /*validate_line will return the operation type for each line of code*/
     LabelType symbol = 0;
-    int isValid = FALSE;
+    ErrorObject error = {0};
     /*Copy line to original line before making changes*/
     strcpy(line_original, line);
 
     if (line[0] == ';') /*If line is a comment, skip it*/
     {
-        return TRUE;
+        return 0; /*Read next line*/
     }
 
     /*Validate line and get operation type*/
-    symbol = validate_line(line, &isValid, is_label);
+    symbol = validate_line(line, &error, is_label, line_number);
 
     /*If label was found, get the label name and skip to next word*/
     if (*is_label)
     {
         word = strtok(line_original, " \t\n");
-        word[strlen(word) - 1] = '\0';
+        word[strlen(word) - 1] = '\0'; /*Remove the ':' from the label name*/
         if (symbol == EXTERNAL || symbol == ENTRY)
         {
-            printf("Warning: Label cannot be decleared before .extern / .entry.\nLabel will be ignored.\n");
-            printf("\t%s\n", line);
+            handle_line_warning(IGNORED_LABEL, line_number, word);
         }
         else
         {
@@ -76,7 +92,7 @@ int parse_line(char *line, int *IC, int *DC, int line_number, int *is_label, Bin
         *is_label = FALSE;
     }
 
-    if (isValid)
+    if (error.code == SUCCESS)
     {
         switch (symbol)
         {
@@ -95,19 +111,20 @@ int parse_line(char *line, int *IC, int *DC, int line_number, int *is_label, Bin
             /*.entry will be handled at the second pass.*/
             break;
         default:
-            printf("Error: Invalid line format\n\t%s\n", line);
+            /*if no valid type, error code will not be success*/
             break;
         }
     }
     else
     {
-        printf("Error: Invalid line format\n\t%s\n", line);
+        handle_error(&error);
+        return TRUE;
     }
 
-    return TRUE;
+    return 0;
 }
 
-LabelType validate_line(char *line, int *is_valid, int *is_label)
+LabelType validate_line(char *line, ErrorObject *error, int *is_label, int line_number)
 {
     char line_original[MAX_LINE];
     char *word;
@@ -116,9 +133,10 @@ LabelType validate_line(char *line, int *is_valid, int *is_label)
     strcpy(line_original, line);
     /*Get first word in line*/
     word = strtok(line_original, " \t\n");
-    if (is_label_dec(word)) /*If label declaration found, turn on flag, skip to next word*/
+    if (is_label_dec(word, line_number, error)) /*If label declaration found, turn on flag, skip to next word*/
     {
-        *is_label = TRUE;
+        if (error->code == SUCCESS)
+            *is_label = TRUE;
         word = strtok(NULL, " \t\n");
     }
 
@@ -137,26 +155,28 @@ LabelType validate_line(char *line, int *is_valid, int *is_label)
 
         if (is_string)
         {
-            *is_valid = validate_string(word);
+            fill_error_object(validate_string(word), line_number, word, error);
         }
         else
         {
-            *is_valid = validate_data(word);
+            fill_error_object(validate_data(word), line_number, word, error);
         }
+
         return DATA;
     }
+
     else if (is_extern_operation(word))
     {
         word = strtok(NULL, "");
         trim(word);
-        *is_valid = validate_extern(word);
+        fill_error_object(validate_extern(word), line_number, word, error);
         return EXTERNAL;
     }
     else if (is_entry_operation(word))
     {
         word = strtok(NULL, "");
         trim(word);
-        *is_valid = validate_entry(word);
+        fill_error_object(validate_entry(word), line_number, word, error);
         return ENTRY;
     }
     else if (is_code_operation(word))
@@ -165,13 +185,13 @@ LabelType validate_line(char *line, int *is_valid, int *is_label)
         rest = strtok(NULL, "");
         trim(word);
         trim(rest);
-        *is_valid = validate_code(word, rest);
+        fill_error_object(validate_code(word, rest), line_number, word, error);
         return CODE;
     }
     else
     {
-        *is_valid = FALSE;
-        return ERROR;
+        fill_error_object(ERROR_INVALID_OPERATION_TYPE, line_number, word, error);
+        return INVALID_TYPE;
     }
 }
 /*trim all whitespaces from char* */
