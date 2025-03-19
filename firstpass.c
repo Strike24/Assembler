@@ -8,6 +8,7 @@ int first_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, L
     int is_label = FALSE;
     int line_number = 1;
     int is_error = FALSE;
+    ErrorObject error = {0};
 
     /*Open file after preassmbler macro expantion (.am)*/
     input_file = open_file(filename, "r", POST_MACRO_EXT);
@@ -24,11 +25,18 @@ int first_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, L
         /*if line is longer than 80 charcthers (not including \0) and fgets cut it, handle error*/
         if (line[strlen(line) - 1] != '\n' && !feof(input_file))
         {
-            handle_line_error(ERROR_LINE_TOO_LONG, line_number, MAX_LINE_STRING);
+
+            fill_error_object(ERROR_LINE_TOO_LONG, line_number, MAX_LINE_STRING, &error);
+            handle_error(&error);
+            is_error = TRUE;
+
+            /*Skip chars not read on file so fgets reads a new line*/
+            while (fgetc(input_file) != '\n')
+                ;
         }
         else
         {
-            is_error = parse_line(line, IC, DC, line_number, &is_label, code_image, data_image, label_list);
+            is_error = (parse_line(line, IC, DC, line_number, &is_label, code_image, data_image, label_list) || is_error);
         }
         line_number++;
     }
@@ -50,7 +58,7 @@ int parse_line(char *line, int *IC, int *DC, int line_number, int *is_label, Bin
     BinaryLine binaryLine;
     /*validate_line will return the operation type for each line of code*/
     LabelType symbol = 0;
-    int isValid = FALSE;
+    ErrorObject error = {0};
     /*Copy line to original line before making changes*/
     strcpy(line_original, line);
 
@@ -60,7 +68,7 @@ int parse_line(char *line, int *IC, int *DC, int line_number, int *is_label, Bin
     }
 
     /*Validate line and get operation type*/
-    symbol = validate_line(line, &isValid, is_label, line_number);
+    symbol = validate_line(line, &error, is_label, line_number);
 
     /*If label was found, get the label name and skip to next word*/
     if (*is_label)
@@ -84,7 +92,7 @@ int parse_line(char *line, int *IC, int *DC, int line_number, int *is_label, Bin
         *is_label = FALSE;
     }
 
-    if (isValid)
+    if (error.code == SUCCESS)
     {
         switch (symbol)
         {
@@ -103,19 +111,20 @@ int parse_line(char *line, int *IC, int *DC, int line_number, int *is_label, Bin
             /*.entry will be handled at the second pass.*/
             break;
         default:
-            handleError(ERROR_INVALID_OPERATION_TYPE);
+            /*if no valid type, error code will not be success*/
             break;
         }
     }
     else
     {
+        handle_error(&error);
         return TRUE;
     }
 
     return 0;
 }
 
-LabelType validate_line(char *line, int *is_valid, int *is_label, int line_number)
+LabelType validate_line(char *line, ErrorObject *error, int *is_label, int line_number)
 {
     char line_original[MAX_LINE];
     char *word;
@@ -124,9 +133,10 @@ LabelType validate_line(char *line, int *is_valid, int *is_label, int line_numbe
     strcpy(line_original, line);
     /*Get first word in line*/
     word = strtok(line_original, " \t\n");
-    if (is_label_dec(word, line_number)) /*If label declaration found, turn on flag, skip to next word*/
+    if (is_label_dec(word, line_number, error)) /*If label declaration found, turn on flag, skip to next word*/
     {
-        *is_label = TRUE;
+        if (error->code == SUCCESS)
+            *is_label = TRUE;
         word = strtok(NULL, " \t\n");
     }
 
@@ -145,27 +155,28 @@ LabelType validate_line(char *line, int *is_valid, int *is_label, int line_numbe
 
         if (is_string)
         {
-            *is_valid = validate_string(word, line_number);
+            fill_error_object(validate_string(word), line_number, word, error);
         }
         else
         {
-            *is_valid = validate_data(word, line_number);
+            fill_error_object(validate_data(word), line_number, word, error);
         }
 
         return DATA;
     }
+
     else if (is_extern_operation(word))
     {
         word = strtok(NULL, "");
         trim(word);
-        *is_valid = validate_extern(word, line_number);
+        fill_error_object(validate_extern(word), line_number, word, error);
         return EXTERNAL;
     }
     else if (is_entry_operation(word))
     {
         word = strtok(NULL, "");
         trim(word);
-        *is_valid = validate_entry(word, line_number);
+        fill_error_object(validate_entry(word), line_number, word, error);
         return ENTRY;
     }
     else if (is_code_operation(word))
@@ -174,14 +185,13 @@ LabelType validate_line(char *line, int *is_valid, int *is_label, int line_numbe
         rest = strtok(NULL, "");
         trim(word);
         trim(rest);
-        *is_valid = validate_code(word, rest, line_number);
+        fill_error_object(validate_code(word, rest), line_number, word, error);
         return CODE;
     }
     else
     {
-        *is_valid = FALSE;
-        handle_line_error(ERROR_INVALID_OPERATION_TYPE, line_number, word);
-        return FALSE;
+        fill_error_object(ERROR_INVALID_OPERATION_TYPE, line_number, word, error);
+        return INVALID_TYPE;
     }
 }
 /*trim all whitespaces from char* */

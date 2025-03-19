@@ -8,7 +8,7 @@ FILE *open_file(char *filename, char *mode, char *ext)
 
     if (ext_filename == NULL)
     {
-        handleError(ERROR_MEMORY_ALLOCATION_FAILED);
+        handle_system_error(ERROR_MEMORY_ALLOCATION_FAILED);
         return NULL;
     }
 
@@ -25,11 +25,11 @@ FILE *open_file(char *filename, char *mode, char *ext)
     {
         if (strcmp(mode, "r") == 0)
         {
-            handleError(ERROR_FILE_NOT_FOUND);
+            handle_system_error(ERROR_FILE_NOT_FOUND);
         }
         else
         {
-            handleError(ERROR_FILE_OPEN_FAILED);
+            handle_system_error(ERROR_FILE_OPEN_FAILED);
         }
         return NULL;
     }
@@ -43,7 +43,7 @@ void remove_file(char *filename, char *ext)
 
     if (ext_filename == NULL)
     {
-        handleError(ERROR_MEMORY_ALLOCATION_FAILED);
+        handle_system_error(ERROR_MEMORY_ALLOCATION_FAILED);
         return;
     }
 

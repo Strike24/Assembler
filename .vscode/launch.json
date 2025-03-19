@@ -24,7 +24,7 @@
             "miDebuggerPath": "/usr/bin/gdb",
             "preLaunchTask": "",
             "postDebugTask": "",
-            "sourceFileMap": {}
+            "sourceFileMap": {},
         }
     ]
 }

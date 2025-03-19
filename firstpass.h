@@ -24,7 +24,7 @@ int parse_line(char *line, int *IC, int *DC, int line_number, int *is_label, Bin
 
 /*Gives line data and vaildation.
 Returns operation type, line validation indicator and label indicator*/
-LabelType validate_line(char *line, int *is_valid, int *is_label, int line_number);
+LabelType validate_line(char *line, ErrorObject *error, int *is_label, int line_number);
 /*Trims a string from spaces and new lines*/
 void trim(char *str);
 #endif
