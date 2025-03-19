@@ -12,6 +12,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+/*Enum to declare error codes
+Each error code has its own error message with paramters*/
 typedef enum
 {
     ERROR_MEMORY_ALLOCATION_FAILED = 2,
@@ -46,11 +48,13 @@ typedef enum
     IGNORED_LABEL
 } WarningCode;
 
+/*Struct to hold error code, message and parameter indicator.
+used to search for error message based on the error code found*/
 typedef struct
 {
     ErrorCode code;
     char *message;
-    char is_extra_word;
+    char is_extra_word; /*If the error message has an extra parameter needed in the message*/
 } Error;
 
 typedef struct
@@ -60,6 +64,8 @@ typedef struct
     char is_extra_word;
 } Warning;
 
+/*Struct to hold error code, extra word, and line number.
+used to pass error information inside functions and handle errors throught the program*/
 typedef struct
 {
     ErrorCode code;
@@ -68,8 +74,14 @@ typedef struct
 } ErrorObject;
 
 void handleWarning(WarningCode code);
+/*Function to handle errors.
+Prints the error message based on the error code and extra paramter.*/
 void handle_error(ErrorObject *error);
 void handle_line_warning(WarningCode code, int line_number, char *extra_word);
+/*Function to fill an error object with error code, line number, and extra word.
+Used to pass error information to the error handling function*/
 int fill_error_object(ErrorCode code, int line_number, char *extra_word, ErrorObject *error);
+/*Function to handle system errors.
+Prints the error message based on the error code without specific line number.*/
 void handle_system_error(ErrorCode code);
 #endif
