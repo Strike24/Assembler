@@ -1,39 +1,5 @@
 #include "errors.h"
 
-Error errors[SIZEOF_ERRORS_ARRAY] = {
-    {ERROR_MEMORY_ALLOCATION_FAILED, "Memory allocation failed, exiting the program.\n", 0},
-    {ERROR_FILE_NOT_FOUND, "File with filename \"%s\" not found in the file system.\n", 1},
-    {ERROR_FILE_OPEN_FAILED, "Could not create new file.\n", 0},
-    {ERROR_FILE_CLOSE_FAILED, "Could not close the file.\n", 0},
-    {ERROR_LINE_TOO_LONG, "Line exceeds maximum amount of characters %s.\n", 1},
-    {ERROR_LABEL_ALREADY_EXISTS, "Label named \"%s\" already decleared.\n", 1},
-    {ERROR_LABEL_NOT_DEFINED, "Label named \"%s\" is not defined.\n", 1},
-    {ERROR_LABEL_NAME_TOO_LONG, "Label name \"%s\" exceeds maximum amount of 30 characters.\n", 1},
-    {ERROR_LABEL_INVALID_START, "Label name \"%s\" must start with an alphabetic character.\n", 1},
-    {ERROR_LABEL_EMPTY_NAME, "Label name cannot be empty.\n", 0},
-    {ERROR_LABEL_NOT_ALPHANUMERIC, "Label name \"%s\" must contain only alphabetic characters and digits.\n", 1},
-    {ERROR_LABEL_RESERVED_WORD, "Label name \"%s\" is a reserved word.\n", 1},
-    {ERROR_LABEL_IS_MACRO_NAME, "Label name \"%s\" is a macro name.\n", 1},
-    {ERROR_LABEL_EMPTY_LINE, "Label can't be decleared on an empty line\n", 0},
-    {ERROR_INVALID_OPERATION_TYPE, "Word \"%s\" is not a defined operation / instruction type.\n", 1},
-    {ERROR_INVALID_NUMBER, "\"%s\" is not a valid number.\n", 1},
-    {ERROR_INVALID_STRING, "%s is not a valid string.\n", 1},
-    {ERROR_INVALID_OPERAND_TYPE, "\"%s\" is not a valid operand type.\n", 1},
-    {ERROR_INVALID_AMOUNT_OF_OPERANDS, "Invalid amount of operands for operation \"%s\".\n", 1},
-    {ERROR_OPERAND_NOT_ALLOWED, "Invalid operand type for operation \"%s\".\n", 1},
-    {ERROR_MACRO_NAME_TOO_LONG, "Macro name \"%s\" exceeds maximum amount of 30 characters.\n", 1},
-    {ERROR_MACRO_NOT_ALPHANUMERIC, "Macro name \"%s\" must contain only alphabetic characters, digits, and underscores.\n", 1},
-    {ERROR_MACRO_NOT_DEFINED, "Macro \"%s\" is not defined.\n", 1},
-    {ERROR_MACRO_RESERVED_WORD, "Macro name \"%s\" is a reserved word.\n", 1},
-    {ERROR_MACRO_INVALID_START, "Macro name \"%s\" must start with an alphabetic character or underscore.\n", 1},
-    {ERROR_MACRO_EMPTY_NAME, "Macro name cannot be empty.\n", 0},
-    {ERROR_MACRO_ALREADY_EXISTS, "Macro named \"%s\" already decleared.\n", 1},
-    {ERROR_MEMORY_EXCEEDED, "* Memory address exceeded 2^21, only validating input from now on. *\n", 0},
-};
-
-Warning warnings[] = {
-    {IGNORED_LABEL, "Label cannot be decleared before .extern / .entry. \n\tLabel \"%s\" will be ignored by the assembler.\n", 1}};
-
 int fill_error_object(ErrorCode code, int line_number, char *extra_word, ErrorObject *error)
 {
     if (!error)
@@ -48,21 +14,6 @@ int fill_error_object(ErrorCode code, int line_number, char *extra_word, ErrorOb
     return SUCCESS;
 }
 
-void handleWarning(WarningCode code)
-{
-    /*Loop over warnings array until code is found*/
-    int i;
-    for (i = 0; i < NUMBER_OF_WARNINGS; i++)
-    {
-        if (warnings[i].code == code)
-        {
-            /*Print warning message*/
-            printf("WARNING: %s\n", warnings[i].message);
-            return;
-        }
-    }
-}
-
 void handle_system_error(ErrorCode code)
 {
     ErrorObject error = {0};
@@ -74,6 +25,36 @@ void handle_system_error(ErrorCode code)
 
 void handle_error(ErrorObject *error)
 {
+    Error errors[SIZEOF_ERRORS_ARRAY] = {
+        {ERROR_MEMORY_ALLOCATION_FAILED, "Memory allocation failed, exiting the program.\n", 0},
+        {ERROR_FILE_NOT_FOUND, "File with filename \"%s\" not found in the file system.\n", 1},
+        {ERROR_FILE_OPEN_FAILED, "Could not create new file.\n", 0},
+        {ERROR_FILE_CLOSE_FAILED, "Could not close the file.\n", 0},
+        {ERROR_LINE_TOO_LONG, "Line exceeds maximum amount of characters %s.\n", 1},
+        {ERROR_LABEL_ALREADY_EXISTS, "Label named \"%s\" already decleared.\n", 1},
+        {ERROR_LABEL_NOT_DEFINED, "Label named \"%s\" is not defined.\n", 1},
+        {ERROR_LABEL_NAME_TOO_LONG, "Label name \"%s\" exceeds maximum amount of 30 characters.\n", 1},
+        {ERROR_LABEL_INVALID_START, "Label name \"%s\" must start with an alphabetic character.\n", 1},
+        {ERROR_LABEL_EMPTY_NAME, "Label name cannot be empty.\n", 0},
+        {ERROR_LABEL_NOT_ALPHANUMERIC, "Label name \"%s\" must contain only alphabetic characters and digits.\n", 1},
+        {ERROR_LABEL_RESERVED_WORD, "Label name \"%s\" is a reserved word.\n", 1},
+        {ERROR_LABEL_IS_MACRO_NAME, "Label name \"%s\" is a macro name.\n", 1},
+        {ERROR_LABEL_EMPTY_LINE, "Label can't be decleared on an empty line\n", 0},
+        {ERROR_INVALID_OPERATION_TYPE, "Word \"%s\" is not a defined operation / instruction type.\n", 1},
+        {ERROR_INVALID_NUMBER, "\"%s\" is not a valid number.\n", 1},
+        {ERROR_INVALID_STRING, "%s is not a valid string.\n", 1},
+        {ERROR_INVALID_OPERAND_TYPE, "\"%s\" is not a valid operand type.\n", 1},
+        {ERROR_INVALID_AMOUNT_OF_OPERANDS, "Invalid amount of operands for operation \"%s\".\n", 1},
+        {ERROR_OPERAND_NOT_ALLOWED, "Invalid operand type for operation \"%s\".\n", 1},
+        {ERROR_MACRO_NAME_TOO_LONG, "Macro name \"%s\" exceeds maximum amount of 30 characters.\n", 1},
+        {ERROR_MACRO_NOT_ALPHANUMERIC, "Macro name \"%s\" must contain only alphabetic characters, digits, and underscores.\n", 1},
+        {ERROR_MACRO_NOT_DEFINED, "Macro \"%s\" is not defined.\n", 1},
+        {ERROR_MACRO_RESERVED_WORD, "Macro name \"%s\" is a reserved word.\n", 1},
+        {ERROR_MACRO_INVALID_START, "Macro name \"%s\" must start with an alphabetic character or underscore.\n", 1},
+        {ERROR_MACRO_EMPTY_NAME, "Macro name cannot be empty.\n", 0},
+        {ERROR_MACRO_ALREADY_EXISTS, "Macro named \"%s\" already decleared.\n", 1},
+        {ERROR_MEMORY_EXCEEDED, "* Memory address exceeded 2^21, only validating input from now on. *\n", 0},
+    };
     int i;
 
     if (!error || error->code == SUCCESS)
@@ -122,34 +103,6 @@ void handle_error(ErrorObject *error)
                 printf("\n");
                 return;
             }
-        }
-    }
-}
-
-void handle_line_warning(WarningCode code, int line_number, char *extra_word)
-{
-    int i;
-    /*Loop over warnings array until code is found*/
-    for (i = 0; i < NUMBER_OF_WARNINGS; i++)
-    {
-        if (warnings[i].code == code)
-        {
-            /*Print warning message*/
-            printf("WARNING in line %d:\n", line_number);
-            printf("\t");
-            if (warnings[i].is_extra_word)
-            {
-                if (extra_word != NULL)
-                {
-                    printf(warnings[i].message, extra_word);
-                }
-            }
-            else
-            {
-                printf("%s", warnings[i].message);
-            }
-            printf("\n");
-            return;
         }
     }
 }

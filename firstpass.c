@@ -79,7 +79,7 @@ int parse_line(char *line, int *IC, int *DC, int line_number, int *is_label, int
         word[strlen(word) - 1] = '\0'; /*Remove the ':' from the label name*/
         if (symbol == EXTERNAL || symbol == ENTRY)
         {
-            handle_line_warning(IGNORED_LABEL, line_number, word);
+            printf("WARNING, Line: %d\nLabel cannot be decleared before .extern / .entry. \n\tLabel \"%s\" will be ignored by the assembler.", line_number, word);
         }
         else
         {

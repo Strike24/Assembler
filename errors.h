@@ -76,11 +76,9 @@ typedef struct
     int line_number;
 } ErrorObject;
 
-void handleWarning(WarningCode code);
 /*Function to handle errors.
 Prints the error message based on the error code and extra paramter.*/
 void handle_error(ErrorObject *error);
-void handle_line_warning(WarningCode code, int line_number, char *extra_word);
 /*Function to fill an error object with error code, line number, and extra word.
 Used to pass error information to the error handling function*/
 int fill_error_object(ErrorCode code, int line_number, char *extra_word, ErrorObject *error);
