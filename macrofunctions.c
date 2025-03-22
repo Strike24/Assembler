@@ -72,7 +72,7 @@ ErrorCode add_macro(MacroNode *head, char *name)
 
 void free_macro_table(MacroNode *head)
 {
-    MacroNode *temp;
+    MacroNode *temp = NULL;
     while (head != NULL)
     {
         temp = head;
@@ -80,8 +80,10 @@ void free_macro_table(MacroNode *head)
 
         if (temp->macro)
         {
-            free(temp->macro->name);
-            free(temp->macro->content);
+            if (temp->macro->name != NULL)
+                free(temp->macro->name);
+            if (temp->macro->content != NULL)
+                free(temp->macro->content);
             free(temp->macro);
         }
         free(temp);

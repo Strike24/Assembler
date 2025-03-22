@@ -41,7 +41,7 @@ void handle_error(ErrorObject *error)
         {ERROR_LABEL_IS_MACRO_NAME, "Label name \"%s\" is a macro name.\n", 1},
         {ERROR_LABEL_EMPTY_LINE, "Label can't be decleared on an empty line\n", 0},
         {ERROR_INVALID_OPERATION_TYPE, "Word \"%s\" is not a defined operation / instruction type.\n", 1},
-        {ERROR_INVALID_NUMBER, "\"%s\" is not a valid number.\n", 1},
+        {ERROR_INVALID_NUMBER, "One or more of the .data paramters are not valid numbers.\n", 0},
         {ERROR_INVALID_STRING, "%s is not a valid string.\n", 1},
         {ERROR_INVALID_OPERAND_TYPE, "\"%s\" is not a valid operand type.\n", 1},
         {ERROR_INVALID_AMOUNT_OF_OPERANDS, "Invalid amount of operands for operation \"%s\".\n", 1},

@@ -69,7 +69,6 @@ int macro_expansion(FILE *input_file, FILE *output_file, MacroNode *head)
                 {
                     fill_error_object(ERROR_MACRO_EMPTY_NAME, line_number, NULL, &error);
                     handle_error(&error);
-                    free_macro_table(head);
                     return ERROR;
                 }
 
@@ -78,7 +77,6 @@ int macro_expansion(FILE *input_file, FILE *output_file, MacroNode *head)
                 {
                     fill_error_object(error.code, line_number, word, &error);
                     handle_error(&error);
-                    free_macro_table(head);
                     return ERROR;
                 }
                 else
@@ -99,7 +97,6 @@ int macro_expansion(FILE *input_file, FILE *output_file, MacroNode *head)
             {
                 fill_error_object(ERROR_MACRO_NOT_DEFINED, line_number, NULL, &error);
                 handle_error(&error);
-                free_macro_table(head);
                 return ERROR;
             }
 

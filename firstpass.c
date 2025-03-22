@@ -24,7 +24,12 @@ int first_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, L
     while (fgets(line, MAX_LINE, input_file))
     {
         /*if line is longer than 80 charcthers (not including \0) and fgets cut it, handle error*/
-        if (line[strlen(line) - 1] != '\n' && !feof(input_file))
+        if (line == NULL || line[0] == ';')
+        {
+            line_number++;
+            continue;
+        }
+        else if (line[strlen(line) - 1] != '\n' && !feof(input_file))
         {
 
             fill_error_object(ERROR_LINE_TOO_LONG, line_number, MAX_LINE_STRING, &error);
@@ -64,11 +69,6 @@ int parse_line(char *line, int *IC, int *DC, int line_number, int *is_label, int
     /*Copy line to original line before making changes*/
     strcpy(line_original, line);
 
-    if (line[0] == ';') /*If line is a comment or a white space, skip it*/
-    {
-        return 0; /*Read next line*/
-    }
-
     /*Validate line and get operation type*/
     symbol = validate_line(line, &error, is_label, line_number, macro_list);
 
@@ -76,6 +76,14 @@ int parse_line(char *line, int *IC, int *DC, int line_number, int *is_label, int
     if (*is_label)
     {
         word = strtok(line_original, " \t\n");
+        if (word == NULL)
+        {
+            fill_error_object(ERROR_LABEL_EMPTY_NAME, line_number, NULL, &error);
+            handle_error(&error);
+            is_label = FALSE;
+            return TRUE;
+        }
+
         word[strlen(word) - 1] = '\0'; /*Remove the ':' from the label name*/
         if (symbol == EXTERNAL || symbol == ENTRY)
         {
@@ -98,6 +106,7 @@ int parse_line(char *line, int *IC, int *DC, int line_number, int *is_label, int
         {
             fill_error_object(error_code, line_number, word, &error);
             handle_error(&error);
+            *is_label = FALSE;
             return FAILURE;
         }
         else
@@ -216,6 +225,7 @@ LabelType validate_line(char *line, ErrorObject *error, int *is_label, int line_
         }
         else
         {
+            *is_label = FALSE;
             return INVALID_TYPE; /*Error will be handled later in parse line*/
         }
     }
@@ -249,7 +259,7 @@ LabelType validate_line(char *line, ErrorObject *error, int *is_label, int line_
     {
         word = strtok(NULL, "");
         trim(word);
-        fill_error_object(validate_extern(word), line_number, word, error);
+        fill_error_object(validate_extern(word, macro_list), line_number, word, error);
         return EXTERNAL;
     }
     else if (is_entry_operation(word))

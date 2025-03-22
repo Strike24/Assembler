@@ -61,6 +61,10 @@ int add_extern_label(ExternLabel *head, Label *label, int address)
 Label *find_label(Label *head, char *name)
 {
     Label *temp = head;
+    if (name == NULL)
+    {
+        return NULL;
+    }
     while (temp != NULL)
     {
         if ((temp->name != NULL) && (strcmp(temp->name, name) == 0))

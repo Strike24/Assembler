@@ -200,6 +200,10 @@ ErrorCode validate_label_name(char *word, MacroNode *macro_list)
         return ERROR_LABEL_NAME_TOO_LONG;
     }
 
+    if (isspace(word[0]) || word[0] == '\0')
+    {
+        return ERROR_LABEL_EMPTY_NAME;
+    }
     /*Check if label starts with alphabatic letter*/
     if (!isalpha(word[0]))
     {
@@ -371,8 +375,9 @@ int is_integer(char *str, int len)
     return str[0] == '\0';
 }
 
-ErrorCode validate_extern(char *word)
+ErrorCode validate_extern(char *word, MacroNode *macro_list)
 {
+    ErrorCode result = SUCCESS;
     word = strtok(word, " ");
     if (word == NULL)
     {
@@ -380,13 +385,8 @@ ErrorCode validate_extern(char *word)
         return ERROR_NULL_PARAM;
     }
 
-    /*
-    if (!is_legal_label_name(word, line_number))
-    {
-        return FALSE;
-    }
-        */
-    return SUCCESS;
+    result = validate_label_name(word, macro_list);
+    return result;
 }
 ErrorCode validate_entry(char *word)
 {

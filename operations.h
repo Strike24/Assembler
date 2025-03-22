@@ -58,7 +58,7 @@ int is_reserved_word(char *word);
 /*Validate line operands and format based on operation*/
 
 ErrorCode validate_data(char *word);
-ErrorCode validate_extern(char *word);
+ErrorCode validate_extern(char *word, MacroNode *macro_list);
 ErrorCode validate_entry(char *word);
 ErrorCode validate_string(char *word);
 /*Validates format of operands and allowed addressing methods based on operation name.*/
