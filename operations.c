@@ -308,7 +308,7 @@ ErrorCode validate_string(char *word)
 {
     if (word == NULL)
     {
-        return ERROR_NULL_PARAM;
+        return ERROR_INVALID_OPERAND_TYPE;
     }
     /*Check if word is a string*/
     if (word[0] != '"')
