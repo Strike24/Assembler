@@ -18,11 +18,11 @@ Operation OPERATIONS[NUM_OF_OPERATIONS] = {
     {"rts", 14, 0, {NONE}, {NONE}},
     {"stop", 15, 0, {NONE}, {NONE}}};
 
-char *register_names[] = {"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7"};
-
 int get_register_index(char *register_name)
 {
     int i;
+    char *register_names[] = {"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7"};
+
     for (i = 0; i < NUM_OF_REGISTERS; i++)
     {
         if (strcmp(register_names[i], register_name) == 0)
@@ -48,13 +48,9 @@ int is_operation_name(char *name)
 
 int is_register_name(char *name)
 {
-    int i;
-    for (i = 0; i < NUM_OF_REGISTERS; i++)
+    if (get_register_index(name) != -1)
     {
-        if (strcmp(register_names[i], name) == 0)
-        {
-            return TRUE;
-        }
+        return TRUE;
     }
     return FALSE;
 }
