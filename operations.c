@@ -264,9 +264,8 @@ int is_reserved_word(char *word)
     if (is_entry_operation(word))
         return TRUE;
 
-    /*   if (is_macro(word))
+    if ((strcmp(word, "mcro") == 0) || (strcmp(word, "mcroend") == 0))
         return TRUE;
-        */
 
     if (is_register_name(word))
         return TRUE;
