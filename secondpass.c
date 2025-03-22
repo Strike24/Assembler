@@ -27,7 +27,8 @@ int second_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, 
         if (line[0] != ';')
         {
             word = strtok(line, " \t\n");
-            if (is_label_dec(word, line_number, &error)) /*If label declaration found, skip to next word*/
+            /*Null in macro_list because its use is not needed here*/
+            if (is_label_dec(word, line_number, &error, NULL)) /*If label declaration found, skip to next word*/
             {
                 word = strtok(NULL, " \t\n");
                 /*word = strtok(NULL, "");*/

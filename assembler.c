@@ -2,6 +2,7 @@
 
 int main(int argc, char *argv[])
 {
+    MacroNode *macro_list = init_macro_table();
     BinaryNode *code_image = init_binary_image();
     BinaryNode *data_image = init_binary_image();
     Label *label_list = init_label_table();
@@ -18,7 +19,7 @@ int main(int argc, char *argv[])
     for (i = 1; i < argc; i++)
     {
         printf("----------- Processing file: \"%s\" -----------\n", argv[i]);
-        if (pre_assembler(argv[i]) == ERROR)
+        if (pre_assembler(argv[i], macro_list) == ERROR)
         {
             printf("Pre Assembler Failed, Exiting Program.\n");
             remove_file(argv[i], POST_MACRO_EXT);
@@ -26,7 +27,7 @@ int main(int argc, char *argv[])
         }
         else
         {
-            is_error = first_pass(argv[i], code_image, data_image, label_list, &IC, &DC);
+            is_error = first_pass(argv[i], code_image, data_image, label_list, macro_list, &IC, &DC);
 
             if (second_pass(argv[i], code_image, data_image, label_list, IC, DC, is_error) == ERROR)
             {
@@ -43,5 +44,6 @@ int main(int argc, char *argv[])
     free_binary_image(code_image);
     free_binary_image(data_image);
     free_label_table(label_list);
+    free_macro_table(macro_list);
     return 0;
 }

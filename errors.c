@@ -1,6 +1,6 @@
 #include "errors.h"
 
-Error errors[] = {
+Error errors[SIZEOF_ERRORS_ARRAY] = {
     {ERROR_MEMORY_ALLOCATION_FAILED, "Memory allocation failed, exiting the program.\n", 0},
     {ERROR_FILE_NOT_FOUND, "File with filename \"%s\" not found in the file system.\n", 1},
     {ERROR_FILE_OPEN_FAILED, "Could not create new file.\n", 0},
@@ -13,7 +13,9 @@ Error errors[] = {
     {ERROR_LABEL_EMPTY_NAME, "Label name cannot be empty.\n", 0},
     {ERROR_LABEL_NOT_ALPHANUMERIC, "Label name \"%s\" must contain only alphabetic characters and digits.\n", 1},
     {ERROR_LABEL_RESERVED_WORD, "Label name \"%s\" is a reserved word.\n", 1},
-    {ERROR_INVALID_OPERATION_TYPE, "Operation \"%s\" is not a defined operation type.\n", 1},
+    {ERROR_LABEL_IS_MACRO_NAME, "Label name \"%s\" is a macro name.\n", 1},
+    {ERROR_LABEL_EMPTY_LINE, "Label can't be decleared on an empty line\n", 0},
+    {ERROR_INVALID_OPERATION_TYPE, "Word \"%s\" is not a defined operation / instruction type.\n", 1},
     {ERROR_INVALID_NUMBER, "\"%s\" is not a valid number.\n", 1},
     {ERROR_INVALID_STRING, "%s is not a valid string.\n", 1},
     {ERROR_INVALID_OPERAND_TYPE, "\"%s\" is not a valid operand type.\n", 1},
@@ -24,7 +26,8 @@ Error errors[] = {
     {ERROR_MACRO_NOT_DEFINED, "Macro \"%s\" is not defined.\n", 1},
     {ERROR_MACRO_RESERVED_WORD, "Macro name \"%s\" is a reserved word.\n", 1},
     {ERROR_MACRO_INVALID_START, "Macro name \"%s\" must start with an alphabetic character or underscore.\n", 1},
-    {ERROR_MACRO_EMPTY_NAME, "Macro name cannot be empty.\n", 0}};
+    {ERROR_MACRO_EMPTY_NAME, "Macro name cannot be empty.\n", 0},
+    {ERROR_MACRO_ALREADY_EXISTS, "Macro named \"%s\" already decleared.\n", 1}};
 
 Warning warnings[] = {
     {IGNORED_LABEL, "Label cannot be decleared before .extern / .entry. \n\tLabel \"%s\" will be ignored by the assembler.\n", 1}};
@@ -83,7 +86,7 @@ void handle_error(ErrorObject *error)
         return;
     }
     /*Loop over errors array until error code is found*/
-    for (i = 0; i < NUMBER_OF_ERRORS; i++)
+    for (i = 0; i < SIZEOF_ERRORS_ARRAY; i++)
     {
         if (errors[i].code == error->code)
         {

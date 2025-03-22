@@ -1,6 +1,6 @@
 #include "firstpass.h"
 
-int first_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, Label *label_list, int *IC, int *DC)
+int first_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, Label *label_list, MacroNode *macro_list, int *IC, int *DC)
 {
     FILE *input_file;
     char line[MAX_LINE];
@@ -36,7 +36,7 @@ int first_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, L
         }
         else
         {
-            is_error = (parse_line(line, IC, DC, line_number, &is_label, code_image, data_image, label_list) || is_error);
+            is_error = (parse_line(line, IC, DC, line_number, &is_label, code_image, data_image, label_list, macro_list) || is_error);
         }
         line_number++;
     }
@@ -50,7 +50,7 @@ int first_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, L
     return is_error;
 }
 
-int parse_line(char *line, int *IC, int *DC, int line_number, int *is_label, BinaryNode *code_image, BinaryNode *data_image, Label *label_list)
+int parse_line(char *line, int *IC, int *DC, int line_number, int *is_label, BinaryNode *code_image, BinaryNode *data_image, Label *label_list, MacroNode *macro_list)
 {
     /*Save original line because we are changing "line" with strtok*/
     char line_original[MAX_LINE];
@@ -59,16 +59,17 @@ int parse_line(char *line, int *IC, int *DC, int line_number, int *is_label, Bin
     /*validate_line will return the operation type for each line of code*/
     LabelType symbol = 0;
     ErrorObject error = {0};
+    ErrorCode error_code = SUCCESS;
     /*Copy line to original line before making changes*/
     strcpy(line_original, line);
 
-    if (line[0] == ';') /*If line is a comment, skip it*/
+    if (line[0] == ';') /*If line is a comment or a white space, skip it*/
     {
         return 0; /*Read next line*/
     }
 
     /*Validate line and get operation type*/
-    symbol = validate_line(line, &error, is_label, line_number);
+    symbol = validate_line(line, &error, is_label, line_number, macro_list);
 
     /*If label was found, get the label name and skip to next word*/
     if (*is_label)
@@ -82,14 +83,23 @@ int parse_line(char *line, int *IC, int *DC, int line_number, int *is_label, Bin
         else
         {
             if (symbol == CODE)
-                add_label(label_list, word, *IC, symbol);
+                error_code = add_label(label_list, word, *IC, symbol);
             else if (symbol == DATA)
             {
-                add_label(label_list, word, *DC, symbol);
+                error_code = add_label(label_list, word, *DC, symbol);
             }
         }
-        word = strtok(NULL, "");
-        *is_label = FALSE;
+        if (error_code != SUCCESS)
+        {
+            fill_error_object(error_code, line_number, word, &error);
+            handle_error(&error);
+            return FAILURE;
+        }
+        else
+        {
+            word = strtok(NULL, "");
+            *is_label = FALSE;
+        }
     }
 
     if (error.code == SUCCESS)
@@ -124,7 +134,7 @@ int parse_line(char *line, int *IC, int *DC, int line_number, int *is_label, Bin
     return 0;
 }
 
-LabelType validate_line(char *line, ErrorObject *error, int *is_label, int line_number)
+LabelType validate_line(char *line, ErrorObject *error, int *is_label, int line_number, MacroNode *macro_list)
 {
     char line_original[MAX_LINE];
     char *word;
@@ -133,11 +143,17 @@ LabelType validate_line(char *line, ErrorObject *error, int *is_label, int line_
     strcpy(line_original, line);
     /*Get first word in line*/
     word = strtok(line_original, " \t\n");
-    if (is_label_dec(word, line_number, error)) /*If label declaration found, turn on flag, skip to next word*/
+    if (is_label_dec(word, line_number, error, macro_list)) /*If label declaration found, turn on flag, skip to next word*/
     {
         if (error->code == SUCCESS)
+        {
             *is_label = TRUE;
-        word = strtok(NULL, " \t\n");
+            word = strtok(NULL, " \t\n");
+        }
+        else
+        {
+            return INVALID_TYPE; /*Error will be handled later in parse line*/
+        }
     }
 
     /*Check if word is a valid operation, detrmain it's type*/
@@ -190,7 +206,18 @@ LabelType validate_line(char *line, ErrorObject *error, int *is_label, int line_
     }
     else
     {
-        fill_error_object(ERROR_INVALID_OPERATION_TYPE, line_number, word, error);
+        if ((word == NULL) && *is_label)
+        {
+            fill_error_object(ERROR_LABEL_EMPTY_LINE, line_number, NULL, error);
+        }
+        else if (word == NULL)
+        {
+            return INVALID_TYPE; /*EMPTY LINE*/
+        }
+        else
+        {
+            fill_error_object(ERROR_INVALID_OPERATION_TYPE, line_number, word, error);
+        }
         return INVALID_TYPE;
     }
 }

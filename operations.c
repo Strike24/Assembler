@@ -145,7 +145,7 @@ int is_code_operation(char *word)
     return is_operation_name(word);
 }
 
-int is_label_dec(char *word_original, int line_number, ErrorObject *error)
+int is_label_dec(char *word_original, int line_number, ErrorObject *error, MacroNode *macro_list)
 {
     char *word = NULL;
     char *colon = NULL;
@@ -176,7 +176,7 @@ int is_label_dec(char *word_original, int line_number, ErrorObject *error)
     }
 
     /*Check if label name is valid*/
-    result = validate_label_name(word);
+    result = validate_label_name(word, macro_list);
     if (result != SUCCESS)
     {
         if (error)
@@ -187,7 +187,7 @@ int is_label_dec(char *word_original, int line_number, ErrorObject *error)
     return TRUE;
 }
 
-ErrorCode validate_label_name(char *word)
+ErrorCode validate_label_name(char *word, MacroNode *macro_list)
 {
     int i;
     if (word == NULL)
@@ -233,6 +233,12 @@ ErrorCode validate_label_name(char *word)
         /*  handle_line_error(ERROR_LABEL_RESERVED_WORD, line_number, word);
          return FALSE; */
         return ERROR_LABEL_RESERVED_WORD;
+    }
+
+    /*Check if label is a macro name*/
+    if (is_macro(word, macro_list))
+    {
+        return ERROR_LABEL_IS_MACRO_NAME;
     }
 
     return SUCCESS;

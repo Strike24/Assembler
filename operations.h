@@ -8,6 +8,7 @@
 #include <string.h>
 #include "defs.h"
 #include "errors.h"
+#include "macrofunctions.h"
 #include <ctype.h>
 
 /*Types of addressing methods*/
@@ -50,7 +51,7 @@ int is_entry_operation(char *word);
 /*Detect code operation based on the name*/
 int is_code_operation(char *word);
 /*Detect if word is a label declaration*/
-int is_label_dec(char *word_original, int line_number, ErrorObject *error);
+int is_label_dec(char *word_original, int line_number, ErrorObject *error, MacroNode *macro_list);
 /*Detect if word is a reserved word*/
 int is_reserved_word(char *word);
 
@@ -63,7 +64,7 @@ ErrorCode validate_string(char *word);
 /*Validates format of operands and allowed addressing methods based on operation name.*/
 ErrorCode validate_code(char *operation, char *oprands);
 int is_integer(char *str, int len);
-ErrorCode validate_label_name(char *word);
+ErrorCode validate_label_name(char *word, MacroNode *macro_list);
 
 /*Addressing Method Validation*/
 

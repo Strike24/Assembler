@@ -1,6 +1,6 @@
 #include "preasm.h"
 
-int pre_assembler(char *filename)
+int pre_assembler(char *filename, MacroNode *head)
 {
     FILE *input_file, *output_file;
 
@@ -12,7 +12,7 @@ int pre_assembler(char *filename)
         return ERROR;
     }
 
-    if (macro_expansion(input_file, output_file) == ERROR)
+    if (macro_expansion(input_file, output_file, head) == ERROR)
     {
         printf("Error: Macro expansion failed\n");
         fclose(input_file);
@@ -25,9 +25,8 @@ int pre_assembler(char *filename)
     return 0;
 }
 
-int macro_expansion(FILE *input_file, FILE *output_file)
+int macro_expansion(FILE *input_file, FILE *output_file, MacroNode *head)
 {
-    MacroNode *head = init_macro_table();
     char line[MAX_LINE];
     char line_copy[MAX_LINE];
     char *word;
@@ -42,7 +41,7 @@ int macro_expansion(FILE *input_file, FILE *output_file)
         line_number++;
         strcpy(line_copy, line);
         word = strtok(line, " \t\n");
-        if (is_label_dec(word, -1, &error)) /*If label is found, skip to next word TODO: CHECK IF LABEL CAN BE BEFORE MACRO DECL*/
+        if (is_label_dec(word, line_number, &error, head)) /*If label is found, skip to next word TODO: CHECK IF LABEL CAN BE BEFORE MACRO DECL*/
         {
             word = strtok(NULL, " \t\n");
         }
@@ -72,7 +71,7 @@ int macro_expansion(FILE *input_file, FILE *output_file)
                     return ERROR;
                 }
 
-                error.code = validate_macro_name(word);
+                error.code = validate_macro_name(word, head);
                 if (error.code != SUCCESS)
                 {
                     fill_error_object(error.code, line_number, word, &error);
@@ -112,6 +111,5 @@ int macro_expansion(FILE *input_file, FILE *output_file)
             }
         }
     }
-    free_macro_table(head);
     return 0;
 }

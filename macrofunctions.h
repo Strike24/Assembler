@@ -19,6 +19,9 @@ typedef struct MacroNode
     struct MacroNode *next;
 } MacroNode;
 
+/*Added after macro and macronode decleration because operations.h uses them*/
+#include "operations.h"
+
 MacroNode *init_macro_table();
 
 ErrorCode add_macro(MacroNode *head, char *name);
@@ -29,6 +32,8 @@ Macro *find_macro(MacroNode *head, char *name);
 
 Macro *get_current_macro(MacroNode *head);
 
-ErrorCode validate_macro_name(char *name);
+ErrorCode validate_macro_name(char *name, MacroNode *head);
+
+int is_macro(char *name, MacroNode *head);
 
 #endif

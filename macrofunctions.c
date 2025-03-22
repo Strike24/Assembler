@@ -6,6 +6,7 @@ MacroNode *init_macro_table()
     if (!head)
     {
         free(head);
+        handle_system_error(ERROR_MEMORY_ALLOCATION_FAILED);
         return NULL;
     }
     head->macro = NULL;
@@ -89,7 +90,10 @@ void free_macro_table(MacroNode *head)
 
 Macro *find_macro(MacroNode *head, char *name)
 {
-    MacroNode *temp = head->next;
+    MacroNode *temp;
+    if (head == NULL)
+        return NULL;
+    temp = head->next;
     while (temp != NULL)
     {
         if (strcmp(temp->macro->name, name) == 0)
@@ -114,7 +118,7 @@ Macro *get_current_macro(MacroNode *head)
     return temp->macro;
 }
 
-ErrorCode validate_macro_name(char *name)
+ErrorCode validate_macro_name(char *name, MacroNode *head)
 {
     if (name == NULL)
         return ERROR_NULL_PARAM;
@@ -125,6 +129,12 @@ ErrorCode validate_macro_name(char *name)
     if (!isalpha(name[0]))
         return ERROR_MACRO_INVALID_START;
 
+    if (is_reserved_word(name))
+        return ERROR_MACRO_RESERVED_WORD;
+
+    if (find_macro(head, name) != NULL)
+        return ERROR_MACRO_ALREADY_EXISTS;
+
     while (*name)
     {
         if (!isalnum(*name) && *name != '_')
@@ -132,4 +142,11 @@ ErrorCode validate_macro_name(char *name)
         name++;
     }
     return SUCCESS;
+}
+
+int is_macro(char *name, MacroNode *head)
+{
+    if (find_macro(head, name) != NULL)
+        return TRUE;
+    return FALSE;
 }

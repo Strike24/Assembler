@@ -9,8 +9,8 @@
 #include "defs.h"
 #include "firstpass.h"
 
-int pre_assembler(char *filename);
+int pre_assembler(char *filename, MacroNode *head);
 
-int macro_expansion(FILE *input_file, FILE *output_file);
+int macro_expansion(FILE *input_file, FILE *output_file, MacroNode *head);
 
 #endif
