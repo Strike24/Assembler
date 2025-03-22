@@ -88,6 +88,10 @@ int parse_line(char *line, int *IC, int *DC, int line_number, int *is_label, Bin
             {
                 error_code = add_label(label_list, word, *DC, symbol);
             }
+            else if (symbol == INVALID_TYPE) /*WE DO NOT WANT ERROR ON THE LABEL, BECAUSE IT EXITS LEGALY*/
+            {
+                error_code = add_label(label_list, word, *IC, symbol);
+            }
         }
         if (error_code != SUCCESS)
         {
@@ -133,6 +137,54 @@ int parse_line(char *line, int *IC, int *DC, int line_number, int *is_label, Bin
 
     return 0;
 }
+/*
+void format_line(char *original_line, int original_len, char *formatted_line, int formatted_len)
+{
+    int i = 0;
+    int j = 0;
+    int is_space_found = FALSE;
+
+    for (i = 0; (i < original_len) && (j < original_len); i++)
+    {
+        if (original_line[i] == '\n')
+        {
+            formatted_line[j] = original_line[i];
+            j++;
+        }
+        if (original_line[i] == ':')
+        {
+            if (isspace(original_line[i + 1]))
+            {
+                formatted_line[j] = original_line[i];
+                j++;
+            }
+            else
+            {
+                formatted_line[j] = original_line[i];
+                j++;
+                if (j + 1 < original_len)
+                {
+                    formatted_line[j + 1] = ' ';
+                    j++;
+                }
+            }
+        }
+        else if (isspace(original_line[i]) && is_space_found == FALSE)
+        {
+            is_space_found = TRUE;
+            formatted_line[j] = ' ';
+            j++;
+        }
+        else
+        {
+            formatted_line[j] = original_line[i];
+            j++;
+
+            is_space_found = FALSE;
+        }
+    }
+}
+*/
 
 LabelType validate_line(char *line, ErrorObject *error, int *is_label, int line_number, MacroNode *macro_list)
 {
@@ -141,6 +193,7 @@ LabelType validate_line(char *line, ErrorObject *error, int *is_label, int line_
     char *rest;
     int is_string = FALSE; /* data 0 string 1*/
     strcpy(line_original, line);
+    /* format_line(line_original, strlen(line_original), line, strlen(line));*/
     /*Get first word in line*/
     word = strtok(line_original, " \t\n");
     if (is_label_dec(word, line_number, error, macro_list)) /*If label declaration found, turn on flag, skip to next word*/
