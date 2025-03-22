@@ -41,10 +41,12 @@ int macro_expansion(FILE *input_file, FILE *output_file, MacroNode *head)
         line_number++;
         strcpy(line_copy, line);
         word = strtok(line, " \t\n");
-        if (is_label_dec(word, line_number, &error, head)) /*If label is found, skip to next word TODO: CHECK IF LABEL CAN BE BEFORE MACRO DECL*/
+        /*
+        if (is_label_dec(word, line_number, &error, head))
         {
             word = strtok(NULL, " \t\n");
         }
+        */
 
         if (!word)
         {
