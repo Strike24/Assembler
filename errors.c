@@ -27,7 +27,9 @@ Error errors[SIZEOF_ERRORS_ARRAY] = {
     {ERROR_MACRO_RESERVED_WORD, "Macro name \"%s\" is a reserved word.\n", 1},
     {ERROR_MACRO_INVALID_START, "Macro name \"%s\" must start with an alphabetic character or underscore.\n", 1},
     {ERROR_MACRO_EMPTY_NAME, "Macro name cannot be empty.\n", 0},
-    {ERROR_MACRO_ALREADY_EXISTS, "Macro named \"%s\" already decleared.\n", 1}};
+    {ERROR_MACRO_ALREADY_EXISTS, "Macro named \"%s\" already decleared.\n", 1},
+    {ERROR_MEMORY_EXCEEDED, "* Memory address exceeded 2^21, only validating input from now on. *\n", 0},
+};
 
 Warning warnings[] = {
     {IGNORED_LABEL, "Label cannot be decleared before .extern / .entry. \n\tLabel \"%s\" will be ignored by the assembler.\n", 1}};

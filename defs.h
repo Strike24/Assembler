@@ -28,4 +28,5 @@
 #define A_OFFSET 2
 #define R_OFFSET 1
 #define E_OFFSET 0
-#define BITS_MASK 16777215;
+#define BITS_MASK 16777215
+#define MAX_MEMORY 2097152

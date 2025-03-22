@@ -9,6 +9,7 @@ int first_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, L
     int line_number = 1;
     int is_error = FALSE;
     ErrorObject error = {0};
+    int memory_exceeded = FALSE;
 
     /*Open file after preassmbler macro expantion (.am)*/
     input_file = open_file(filename, "r", POST_MACRO_EXT);
@@ -36,7 +37,7 @@ int first_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, L
         }
         else
         {
-            is_error = (parse_line(line, IC, DC, line_number, &is_label, code_image, data_image, label_list, macro_list) || is_error);
+            is_error = (parse_line(line, IC, DC, line_number, &is_label, &memory_exceeded, code_image, data_image, label_list, macro_list) || is_error);
         }
         line_number++;
     }
@@ -50,7 +51,7 @@ int first_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, L
     return is_error;
 }
 
-int parse_line(char *line, int *IC, int *DC, int line_number, int *is_label, BinaryNode *code_image, BinaryNode *data_image, Label *label_list, MacroNode *macro_list)
+int parse_line(char *line, int *IC, int *DC, int line_number, int *is_label, int *memory_exceeded, BinaryNode *code_image, BinaryNode *data_image, Label *label_list, MacroNode *macro_list)
 {
     /*Save original line because we are changing "line" with strtok*/
     char line_original[MAX_LINE];
@@ -108,6 +109,16 @@ int parse_line(char *line, int *IC, int *DC, int line_number, int *is_label, Bin
 
     if (error.code == SUCCESS)
     {
+        if (*IC + *DC >= MAX_MEMORY)
+        {
+            /*If memory exceeded maximum limit of 2^21, print and don't code the line*/
+            if (*memory_exceeded == FALSE)
+            {
+                handle_system_error(ERROR_MEMORY_EXCEEDED);
+            }
+            *memory_exceeded = TRUE;
+            return TRUE;
+        }
         switch (symbol)
         {
         case DATA:
