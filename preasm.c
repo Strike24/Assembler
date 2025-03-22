@@ -34,6 +34,7 @@ int macro_expansion(FILE *input_file, FILE *output_file, MacroNode *head)
     Macro *current_macro;
     ErrorObject error = {0};
     int line_number = 0;
+    int is_error = FALSE;
     /*char macro_content_buffer[MAX_LINE * 100]; = {0};*/
 
     while (fgets(line, MAX_LINE, input_file))
@@ -48,7 +49,7 @@ int macro_expansion(FILE *input_file, FILE *output_file, MacroNode *head)
         }
         */
 
-        if (!word)
+        if (!word || word[0] == ';')
         {
             fprintf(output_file, "%s", line_copy);
             continue;
@@ -69,7 +70,8 @@ int macro_expansion(FILE *input_file, FILE *output_file, MacroNode *head)
                 {
                     fill_error_object(ERROR_MACRO_EMPTY_NAME, line_number, NULL, &error);
                     handle_error(&error);
-                    return ERROR;
+                    is_error = TRUE;
+                    continue;
                 }
 
                 error.code = validate_macro_name(word, head);
@@ -77,11 +79,19 @@ int macro_expansion(FILE *input_file, FILE *output_file, MacroNode *head)
                 {
                     fill_error_object(error.code, line_number, word, &error);
                     handle_error(&error);
-                    return ERROR;
+                    is_error = TRUE;
+                    continue;
                 }
                 else
                 {
-                    add_macro(head, word);
+                    error.code = add_macro(head, word);
+                    if (error.code != SUCCESS)
+                    {
+                        fill_error_object(error.code, line_number, word, &error);
+                        handle_error(&error);
+                        is_error = TRUE;
+                        continue;
+                    }
                     in_macro_creation = TRUE;
                 }
             }
@@ -97,7 +107,8 @@ int macro_expansion(FILE *input_file, FILE *output_file, MacroNode *head)
             {
                 fill_error_object(ERROR_MACRO_NOT_DEFINED, line_number, NULL, &error);
                 handle_error(&error);
-                return ERROR;
+                is_error = TRUE;
+                continue;
             }
 
             if (strcmp(word, "mcroend") == 0)
@@ -110,5 +121,5 @@ int macro_expansion(FILE *input_file, FILE *output_file, MacroNode *head)
             }
         }
     }
-    return 0;
+    return is_error ? ERROR : SUCCESS;
 }
