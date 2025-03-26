@@ -1,0 +1,23 @@
+----------- Processing file: "test-cases/invalid/test1" -----------
+ERROR in line 2:
+	Label name "!label" must start with an alphabetic character.
+
+ERROR in line 13:
+	Invalid amount of operands for operation "sub".
+
+ERROR in line 17:
+	One or more of the .data paramters are not valid numbers.
+
+ERROR in line 5:
+	Label named "UNKNOWN" is not defined.
+
+ERROR in line 11:
+	Label named "r8" is not defined.
+
+ERROR in line 14:
+	Label named "UNKNOWN" is not defined.
+
+
+Errors found in the assembly process, output files not built.
+----------- Finished processing file: "test-cases/invalid/test1" -----------
+

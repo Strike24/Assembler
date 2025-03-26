@@ -1,0 +1,26 @@
+----------- Processing file: "test-cases/invalid/test2" -----------
+ERROR in line 2:
+	Label name "HEAD" is a macro name.
+
+ERROR in line 4:
+	Invalid operand type for operation "lea".
+
+ERROR in line 5:
+	Line exceeds maximum amount of characters 80.
+
+ERROR in line 7:
+	Invalid amount of operands for operation "stop".
+
+ERROR in line 10:
+	Label name "lea" is a reserved word.
+
+ERROR in line 11:
+	Label name "THISLABELNAMEISTOOLONGANDEXCEEDSMAX" exceeds maximum amount of 30 characters.
+
+ERROR in line 3:
+	Label named "SKIP" is not defined.
+
+
+Errors found in the assembly process, output files not built.
+----------- Finished processing file: "test-cases/invalid/test2" -----------
+

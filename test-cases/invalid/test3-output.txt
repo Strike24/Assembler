@@ -1,0 +1,21 @@
+----------- Processing file: "test-cases/invalid/test3" -----------
+ERROR in line 3:
+	Macro name "dec" is a reserved word.
+
+ERROR in line 12:
+	Macro name cannot be empty.
+
+ERROR in line 15:
+	Macro name "THISMCRONAMEISTOOLONGANDEXCEEDSMAX" exceeds maximum amount of 30 characters.
+
+ERROR in line 18:
+	Macro named "m_acro" already decleared.
+
+ERROR in line 21:
+	Macro name "!cool_name!" must start with an alphabetic character or underscore.
+
+ERROR in line 24:
+	Macro name "best_name-ever!" must contain only alphabetic characters, digits, and underscores.
+
+Error: Macro expansion failed
+Pre Assembler Failed, Exiting Program.

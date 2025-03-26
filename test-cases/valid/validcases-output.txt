@@ -1,0 +1,8 @@
+----------- Processing file: "test-cases/valid/test1" -----------
+* No errors found in the assembly process, output files built. *
+----------- Finished processing file: "test-cases/valid/test1" -----------
+
+----------- Processing file: "test-cases/valid/test2" -----------
+* No errors found in the assembly process, output files built. *
+----------- Finished processing file: "test-cases/valid/test2" -----------
+
