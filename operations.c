@@ -482,8 +482,8 @@ ErrorCode validate_code(char *operation, char *oprands)
                 break;
             }
             result = ERROR;
-            oprands = strtok(NULL, ",");
         }
+        oprands = strtok(NULL, ",");
     }
 
     if (oprands != NULL)

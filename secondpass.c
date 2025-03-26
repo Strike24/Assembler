@@ -131,7 +131,8 @@ int fill_missing_label_info(BinaryNode *code_image, Label *label_list, char *lin
             {
                 if (current_line->code[j] == 0)
                 {
-                    current_line->code[j] = current_label->address - current_line->address;
+                    current_line->code[j] = (current_label->address - current_line->address) << ARE_OFFSET;
+                    current_line->code[j] |= 1U << A_OFFSET;
                     break;
                 }
                 else if (i == current_line->num_of_lines - 1)

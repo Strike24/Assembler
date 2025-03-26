@@ -3,6 +3,7 @@
 FILE *open_file(char *filename, char *mode, char *ext)
 {
     /*Allocates memory for a new file name that includes the extension*/
+    ErrorObject error = {0};
     char *ext_filename = (char *)malloc(strlen(filename) + strlen(ext) + 1);
     FILE *file = NULL;
 
@@ -25,11 +26,13 @@ FILE *open_file(char *filename, char *mode, char *ext)
     {
         if (strcmp(mode, "r") == 0)
         {
-            handle_system_error(ERROR_FILE_NOT_FOUND);
+            fill_error_object(ERROR_FILE_NOT_FOUND, 0, filename, &error);
+            handle_error(&error);
         }
         else
         {
-            handle_system_error(ERROR_FILE_OPEN_FAILED);
+            fill_error_object(ERROR_FILE_OPEN_FAILED, 0, filename, &error);
+            handle_error(&error);
         }
         return NULL;
     }

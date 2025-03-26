@@ -144,11 +144,11 @@ BinaryLine code_binary(int *IC, char *line, int sourcecode_line_number)
             add_line_for_immidiate(word, &binaryLine);
             break;
         case DIRECT:
-            binaryLine.code[binaryLine.num_of_lines - 1] |= DIRECT << ADD_MTD_SRC_OFFSET;
+            binaryLine.code[OPERATION_LINE_INDEX] |= DIRECT << ADD_MTD_SRC_OFFSET;
             add_empty_line(&binaryLine);
             break;
         case RELATIVE:
-            binaryLine.code[binaryLine.num_of_lines - 1] |= RELATIVE << ADD_MTD_SRC_OFFSET;
+            binaryLine.code[OPERATION_LINE_INDEX] |= RELATIVE << ADD_MTD_SRC_OFFSET;
             add_empty_line(&binaryLine);
             break;
         default:
@@ -170,11 +170,11 @@ BinaryLine code_binary(int *IC, char *line, int sourcecode_line_number)
             add_line_for_immidiate(word, &binaryLine);
             break;
         case DIRECT:
-            binaryLine.code[binaryLine.num_of_lines - 1] |= DIRECT << ADD_MTD_DEST_OFFSET;
+            binaryLine.code[OPERATION_LINE_INDEX] |= DIRECT << ADD_MTD_DEST_OFFSET;
             add_empty_line(&binaryLine);
             break;
         case RELATIVE:
-            binaryLine.code[binaryLine.num_of_lines - 1] |= RELATIVE << ADD_MTD_DEST_OFFSET;
+            binaryLine.code[OPERATION_LINE_INDEX] |= RELATIVE << ADD_MTD_DEST_OFFSET;
             add_empty_line(&binaryLine);
             break;
         default:
