@@ -31,7 +31,3 @@ CMakeLists.txt
 *.out
 *.app
 assembler
-
-*.ob
-*.ent
-*.ext
