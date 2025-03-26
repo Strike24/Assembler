@@ -55,7 +55,7 @@ ErrorCode add_macro(MacroNode *head, char *name)
         return ERROR_MEMORY_ALLOCATION_FAILED;
     }
     strcpy(newMacro->name, name);
-    newMacro->content = (char *)malloc(MAX_LINE * 100 * sizeof(char));
+    newMacro->content = (char *)malloc(MAX_LINE * MAX_MACRO_LINES * sizeof(char));
     if (!newMacro->content)
     {
         free(newMacro->name);

@@ -10,6 +10,7 @@
 #define MAX_LINE_STRING "80"
 #define MAX_LABEL 31
 #define MAX_MACRO_NAME 31
+#define MAX_MACRO_LINES 80
 #define PRE_MACRO_EXT ".as"
 #define POST_MACRO_EXT ".am"
 #define OB_EXT ".ob"

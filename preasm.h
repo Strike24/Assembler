@@ -9,8 +9,11 @@
 #include "defs.h"
 #include "firstpass.h"
 
+/*The Pre Assembler handles the process of macro expansion. Main function to open the as file and create an am file*/
 int pre_assembler(char *filename, MacroNode *head);
 
+/*Loops over every line in the .as file and expands created macros. Outputs .am file with macros expanded
+the .am file will be used in the next passes*/
 int macro_expansion(FILE *input_file, FILE *output_file, MacroNode *head);
 
 #endif
