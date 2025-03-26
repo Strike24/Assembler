@@ -6,3 +6,7 @@
 * No errors found in the assembly process, output files built. *
 ----------- Finished processing file: "test-cases/valid/test2" -----------
 
+----------- Processing file: "test-cases/valid/test3" -----------
+* No errors found in the assembly process, output files built. *
+----------- Finished processing file: "test-cases/valid/test3" -----------
+
