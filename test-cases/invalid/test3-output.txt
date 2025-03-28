@@ -18,4 +18,5 @@ ERROR in line 24:
 	Macro name "best_name-ever!" must contain only alphabetic characters, digits, and underscores.
 
 Error: Macro expansion failed
-Pre Assembler Failed, Exiting Program.
+Pre Assembler Failed, Moving to next file.
+

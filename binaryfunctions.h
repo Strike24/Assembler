@@ -36,7 +36,6 @@ BinaryLine data_binary(int *DC, char *line, int sourcecode_line_number);
 BinaryNode *init_binary_image();
 int add_binary_line(BinaryLine binaryLine, BinaryNode *head);
 void free_binary_image(BinaryNode *head);
-void print_binary_image(BinaryNode *head);
 /*Find a BinaryLine by its source code line number and returns a pointer to it*/
 BinaryLine *find_by_line_number(BinaryNode *head, int line_number);
 
