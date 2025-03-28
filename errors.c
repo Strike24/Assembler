@@ -40,6 +40,7 @@ void handle_error(ErrorObject *error)
         {ERROR_LABEL_RESERVED_WORD, "Label name \"%s\" is a reserved word.\n", 1},
         {ERROR_LABEL_IS_MACRO_NAME, "Label name \"%s\" is a macro name.\n", 1},
         {ERROR_LABEL_EMPTY_LINE, "Label can't be decleared on an empty line\n", 0},
+        {ERROR_LABEL_IS_EXTERNAL, "Label \"%s\" is an external label and cannot be used as an entry.\n", 1},
         {ERROR_INVALID_OPERATION_TYPE, "Word \"%s\" is not a defined operation / instruction type.\n", 1},
         {ERROR_INVALID_NUMBER, "One or more of the .data paramters are not valid numbers.\n", 0},
         {ERROR_INVALID_STRING, "%s is not a valid string.\n", 1},

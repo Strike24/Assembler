@@ -44,6 +44,12 @@ int second_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, 
                     handle_error(&error);
                     is_error = TRUE;
                 }
+                else if (current_label->type == EXTERNAL)
+                {
+                    fill_error_object(ERROR_LABEL_IS_EXTERNAL, line_number, word, &error);
+                    handle_error(&error);
+                    is_error = TRUE;
+                }
                 else
                 {
                     current_label->type = ENTRY;
