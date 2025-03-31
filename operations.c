@@ -1,5 +1,10 @@
 #include "operations.h"
 
+/*TODO: ADD CHECK ALL OVER THE PROJECT TO CHECK IF POINTERS ARE NULL BEFORE USING THEM.*/
+
+/*TODO: MAYBE MOVE INTO A FUNCTION TO PREVENT GLOBAL VARIABLE*/
+/*Constant operations array that holds information for each code operation.
+Table holds: name, opcode, funct, allowed source methods, allowed target methods*/
 Operation OPERATIONS[NUM_OF_OPERATIONS] = {
     {"mov", 0, 0, {IMMEDIATE, DIRECT, REGISTER, -1}, {DIRECT, REGISTER, -1}},
     {"cmp", 1, 0, {IMMEDIATE, DIRECT, REGISTER, -1}, {IMMEDIATE, DIRECT, REGISTER, -1}},
@@ -21,8 +26,11 @@ Operation OPERATIONS[NUM_OF_OPERATIONS] = {
 int get_register_index(char *register_name)
 {
     int i;
+    /*Array of register names, from 0 to 7*/
     char *register_names[] = {"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7"};
 
+    /*TODO: MAYBE CHANGE TO AN IF STATEMENT WITH 0 <= x <= 7 instead of looping*/
+    /*Searches for register name, if found, returns its index*/
     for (i = 0; i < NUM_OF_REGISTERS; i++)
     {
         if (strcmp(register_names[i], register_name) == 0)
@@ -75,6 +83,7 @@ OperandType *get_allowed_addressing_methods(char *name, int source_or_target)
     {
         if (strcmp(OPERATIONS[i].name, name) == 0)
         {
+            /*If source_or_target is SOURCE, return the allowed source methods. if target, return allowed target*/
             if (source_or_target == SOURCE)
             {
                 return OPERATIONS[i].allowed_source;
@@ -156,6 +165,12 @@ int is_label_dec(char *word_original, int line_number, ErrorObject *error, Macro
     strcpy(word, word_original);
     colon = strchr(word, ':');
     if (colon == NULL) /*Check if : are existent*/
+    {
+        free(word);
+        return FALSE;
+    }
+    /*Check if there is a space after :*/
+    if (*(colon + 1) == ' ')
     {
         free(word);
         return FALSE;
@@ -381,9 +396,10 @@ ErrorCode validate_extern(char *word, MacroNode *macro_list)
     if (word == NULL)
     {
         /*No data found*/
-        return ERROR_NULL_PARAM;
+        return ERROR_EXTERN_EMPTY_NAME;
     }
 
+    /*Check if operand is a valid label name*/
     result = validate_label_name(word, macro_list);
     return result;
 }
@@ -393,15 +409,8 @@ ErrorCode validate_entry(char *word)
     if (word == NULL)
     {
         /*No data found*/
-        return FAILURE;
+        return ERROR_EXTERN_EMPTY_NAME;
     }
-
-    /*
-    if (!is_legal_label_name(word))
-    {
-        return FALSE;
-    }
-        */
 
     return SUCCESS;
 }

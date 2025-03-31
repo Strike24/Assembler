@@ -34,9 +34,11 @@ typedef struct
 
 /* checks if a string is one of the operation names */
 int is_operation_name(char *name);
-/* check if a string is one of the register names */
+/* checks if a string is one of the register names */
 int is_register_name(char *name);
+/* get register index based on name */
 int get_register_index(char *register_name);
+/* get operation's pointer from the operations table based on the name */
 Operation *get_operation(char *name);
 OperandType *get_allowed_addressing_methods(char *name, int source_or_target);
 

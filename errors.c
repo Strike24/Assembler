@@ -55,6 +55,8 @@ void handle_error(ErrorObject *error)
         {ERROR_MACRO_EMPTY_NAME, "Macro name cannot be empty.\n", 0},
         {ERROR_MACRO_ALREADY_EXISTS, "Macro named \"%s\" already decleared.\n", 1},
         {ERROR_MEMORY_EXCEEDED, "* Memory address exceeded 2^21, only validating input from now on. *\n", 0},
+        {ERROR_ENTRY_EMPTY_NAME, ".entry operand cannot be empty.\n", 0},
+        {ERROR_EXTERN_EMPTY_NAME, ".extern operand cannot be empty.\n", 0},
     };
     int i;
 
