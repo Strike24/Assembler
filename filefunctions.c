@@ -3,9 +3,16 @@
 FILE *open_file(char *filename, char *mode, char *ext)
 {
     ErrorObject error = {0};
-    /*Allocates memory for a new file name that includes the extension*/
-    char *ext_filename = (char *)malloc(strlen(filename) + strlen(ext) + 1);
+    char *ext_filename = NULL;
     FILE *file = NULL;
+
+    if (filename == NULL || mode == NULL || ext == NULL)
+    {
+        /*If any of the parameters are null return null*/
+        return NULL;
+    }
+    /*Allocates memory for a new file name that includes the extension*/
+    ext_filename = (char *)malloc(strlen(filename) + strlen(ext) + 1);
 
     if (ext_filename == NULL)
     {
@@ -33,14 +40,14 @@ FILE *open_file(char *filename, char *mode, char *ext)
         {
             /*Failed to open file for reading, handle error and return null*/
             fill_error_object(ERROR_FILE_NOT_FOUND, 0, filename, &error);
-            handle_error(&error);
         }
         else
         {
             /*Failed to open file for writing, handle error and return null*/
             fill_error_object(ERROR_FILE_OPEN_FAILED, 0, filename, &error);
-            handle_error(&error);
         }
+
+        handle_error(&error);
         return NULL;
     }
 

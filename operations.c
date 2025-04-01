@@ -1,7 +1,5 @@
 #include "operations.h"
 
-/*TODO: ADD CHECK ALL OVER THE PROJECT TO CHECK IF POINTERS ARE NULL BEFORE USING THEM.*/
-
 /*TODO: MAYBE MOVE INTO A FUNCTION TO PREVENT GLOBAL VARIABLE*/
 /*Constant operations array that holds information for each code operation.
 Table holds: name, opcode, funct, allowed source methods, allowed target methods*/
@@ -315,7 +313,6 @@ ErrorCode validate_data(char *word)
         return ERROR_EXTRA_COMMA;
     }
 
-    /*TODO: CHECK WITH DAD*/
     for (i = 0; word[i] != '\0'; i++)
     {
         if (word[i] == ',' && word[i + 1] == ',')

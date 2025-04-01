@@ -73,6 +73,12 @@ ErrorCode add_macro(MacroNode *head, char *name)
 void free_macro_table(MacroNode *head)
 {
     MacroNode *temp = NULL;
+
+    if (!head)
+    {
+        return;
+    }
+
     while (head != NULL)
     {
         temp = head;
@@ -82,10 +88,13 @@ void free_macro_table(MacroNode *head)
         {
             if (temp->macro->name != NULL)
                 free(temp->macro->name);
+
             if (temp->macro->content != NULL)
                 free(temp->macro->content);
+
             free(temp->macro);
         }
+
         free(temp);
     }
 }
@@ -122,6 +131,7 @@ Macro *get_current_macro(MacroNode *head)
 
 ErrorCode validate_macro_name(char *name, MacroNode *head)
 {
+
     if (name == NULL)
         return ERROR_NULL_PARAM;
     if (strlen(name) == 0)
@@ -134,12 +144,12 @@ ErrorCode validate_macro_name(char *name, MacroNode *head)
     if (is_reserved_word(name))
         return ERROR_MACRO_RESERVED_WORD;
 
-    if (find_macro(head, name) != NULL)
+    if (head && find_macro(head, name) != NULL)
         return ERROR_MACRO_ALREADY_EXISTS;
 
-    while (*name)
+    while (name && (name[0] != '\0'))
     {
-        if (!isalnum(*name) && *name != '_')
+        if (!isalnum(name[0]) && (name[0] != '_'))
             return ERROR_MACRO_NOT_ALPHANUMERIC;
         name++;
     }

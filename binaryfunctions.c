@@ -45,17 +45,28 @@ int add_binary_line(BinaryLine binaryLine, BinaryNode *head)
 
 void free_binary_image(BinaryNode *head)
 {
-    BinaryNode *current = head->next;
-    BinaryNode *next = NULL;
-    while (current != NULL)
+    BinaryNode *temp = NULL;
+
+    if (!head)
     {
-        next = current->next;
-        free(current->line->code);
-        free(current->line);
-        free(current);
-        current = next;
+        return;
     }
-    free(head);
+
+    while (head != NULL)
+    {
+        temp = head;
+        head = head->next;
+
+        if (temp->line)
+        {
+            if (temp->line->code)
+            {
+                free(temp->line->code);
+            }
+            free(temp->line);
+        }
+        free(temp);
+    }
 }
 
 BinaryLine *find_by_line_number(BinaryNode *head, int line_number)
@@ -226,8 +237,6 @@ BinaryLine data_binary(int *DC, char *line, int sourcecode_line_number)
     BinaryLine binaryLine = {0, 0, 0, 0};
     char line_original[MAX_LINE] = {0};
     char *word = NULL;
-    int i = 0;
-    int num_of_integers = 0;
 
     strcpy(line_original, line);
     binaryLine.address = *DC;
@@ -238,68 +247,94 @@ BinaryLine data_binary(int *DC, char *line, int sourcecode_line_number)
     word = strtok(line, " \t\n");
     if (word == NULL)
     {
-        return binaryLine;
+        return binaryLine; /*this line will never be reached because we already validated the line*/
     }
 
-    if (strcmp(word, ".string") == 0)
+    if (strcmp(word, STRING_INSTRUCTION) == 0)
     {
-        word = strtok(NULL, "");
-        trim(word);
-        word++;                        /*Skip first "*/
-        word[strlen(word) - 1] = '\0'; /*Skip last "*/
-        binaryLine.code = (unsigned int *)malloc(sizeof(unsigned int) * strlen(word) + 1);
-        if (!binaryLine.code)
-        {
-            handle_system_error(ERROR_MEMORY_ALLOCATION_FAILED);
+        if (code_string_instruction(word, &binaryLine) == FAILURE)
             return binaryLine;
-        }
-        memset(binaryLine.code, 0, sizeof(unsigned int) * strlen(word) + 1);
-        binaryLine.num_of_lines = strlen(word) + 1;
-        for (i = 0; i < binaryLine.num_of_lines - 1; i++)
-        {
-            binaryLine.code[i] = (unsigned char)word[i]; /*Stores ascii value of word[i]*/
-        }
-        binaryLine.code[binaryLine.num_of_lines - 1] = '\0';
     }
-    else if (strcmp(word, ".data") == 0)
+    else if (strcmp(word, DATA_INSTURCTION) == 0)
     {
-
-        word = strtok(NULL, "");
-        trim(word);
-        num_of_integers = get_number_of_integers(word);
-        if (num_of_integers == ERROR)
-        {
-            handle_system_error(ERROR_MEMORY_ALLOCATION_FAILED);
+        if (code_data_instruction(word, &binaryLine) == FAILURE)
             return binaryLine;
-        }
-        binaryLine.code = (unsigned int *)malloc(sizeof(unsigned int) * num_of_integers + 1);
-        if (!binaryLine.code)
-        {
-            handle_system_error(ERROR_MEMORY_ALLOCATION_FAILED);
-            return binaryLine;
-        }
-        memset(binaryLine.code, 0, sizeof(unsigned int) * num_of_integers + 1);
-        word = strtok(word, ",");
-        while (word != NULL)
-        {
-            if (binaryLine.num_of_lines <= num_of_integers)
-            {
-                binaryLine.code[binaryLine.num_of_lines] = atoi(word);
-                binaryLine.num_of_lines++;
-            }
-            word = strtok(NULL, ",");
-        }
     }
 
     (*DC) += binaryLine.num_of_lines;
     return binaryLine;
 }
 
+int code_string_instruction(char *word, BinaryLine *binaryLine)
+{
+    int i = 0;
+    if (!word || !binaryLine)
+    {
+        return FAILURE;
+    }
+    word = strtok(NULL, "");
+    trim(word);
+    word++;                        /*Skip the first '"'  */
+    word[strlen(word) - 1] = '\0'; /*remove the last '"' */
+    binaryLine->code = (unsigned int *)malloc(sizeof(unsigned int) * strlen(word) + 1);
+    if (!binaryLine->code)
+    {
+        handle_system_error(ERROR_MEMORY_ALLOCATION_FAILED);
+        return FAILURE;
+    }
+    memset(binaryLine->code, 0, sizeof(unsigned int) * strlen(word) + 1);
+    binaryLine->num_of_lines = strlen(word) + 1;
+    for (i = 0; i < binaryLine->num_of_lines - 1; i++)
+    {
+        binaryLine->code[i] = (unsigned int)word[i]; /*Stores ascii value of word[i]*/
+    }
+    binaryLine->code[binaryLine->num_of_lines - 1] = '\0';
+    return SUCCESS;
+}
+
+int code_data_instruction(char *word, BinaryLine *binaryLine)
+{
+    int num_of_integers = 0;
+    if (!word || !binaryLine)
+    {
+        return FAILURE;
+    }
+    word = strtok(NULL, "");
+    trim(word);
+    num_of_integers = get_number_of_integers(word);
+    if (num_of_integers == ERROR)
+    {
+        handle_system_error(ERROR_MEMORY_ALLOCATION_FAILED);
+        return FAILURE;
+    }
+    binaryLine->code = (unsigned int *)malloc(sizeof(unsigned int) * num_of_integers + 1);
+    if (!binaryLine->code)
+    {
+        handle_system_error(ERROR_MEMORY_ALLOCATION_FAILED);
+        return FAILURE;
+    }
+    memset(binaryLine->code, 0, sizeof(unsigned int) * num_of_integers + 1);
+    word = strtok(word, ",");
+    while (word != NULL)
+    {
+        if (binaryLine->num_of_lines <= num_of_integers)
+        {
+            binaryLine->code[binaryLine->num_of_lines] = atoi(word);
+            binaryLine->num_of_lines++;
+        }
+        word = strtok(NULL, ",");
+    }
+    return SUCCESS;
+}
+
 int get_number_of_integers(char *line)
 {
-    char *line_copy = (char *)malloc(strlen(line) + 1);
+    char *line_copy = NULL;
     int count = 0;
     char *word = NULL;
+    if (!line)
+        return ERROR;
+    line_copy = (char *)malloc(strlen(line) + 1);
     if (!line_copy)
     {
         return ERROR;

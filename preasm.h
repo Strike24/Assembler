@@ -15,5 +15,6 @@ int pre_assembler(char *filename, MacroNode *head);
 /*Loops over every line in the .as file and expands created macros. Outputs .am file with macros expanded
 the .am file will be used in the next passes*/
 int macro_expansion(FILE *input_file, FILE *output_file, MacroNode *head);
+int process_line(MacroNode *head, FILE *output_file, char *word, int *in_macro_creation, char *line_copy, ErrorObject *error);
 
 #endif

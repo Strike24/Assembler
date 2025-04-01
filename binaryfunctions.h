@@ -47,4 +47,6 @@ unsigned int get_code_for_register(char *register_name, int is_source); /*Return
 void add_line_for_immidiate(char *operand, BinaryLine *binaryLine);     /*Encodes an immidiate type operand*/
 void add_empty_line(BinaryLine *binaryLine);                            /*Addes empty binary line to be filled in the second pass*/
 int get_number_of_integers(char *line);                                 /*Get number of integers in a data operation*/
+int code_string_instruction(char *word, BinaryLine *binaryLine);        /*add code for a string*/
+int code_data_instruction(char *word, BinaryLine *binaryLine);          /*add code for a set of numbers*/
 #endif

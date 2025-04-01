@@ -7,7 +7,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/assembler", // Path to your compiled C executable
             "args": [
-                "test-cases/valid/test2"
+                "test-cases/invalid/test3"
             ], // Arguments for your executable, if needed
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

@@ -16,6 +16,10 @@
 #define OB_EXT ".ob"
 #define ENT_EXT ".ent"
 #define EXT_EXT ".ext"
+#define MACRO_DECLERATION_PREFIX "mcro"
+#define MACRO_DECLERATION_SUFFIX "mcroend"
+#define STRING_INSTRUCTION ".string"
+#define DATA_INSTURCTION ".data"
 #define BASE_10 10
 #define MAX_CODE_LINES 300
 #define MAX_DATA_LINES 300

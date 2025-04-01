@@ -85,7 +85,10 @@ int add_extern_label_to_list(char *line, Label *head)
 
 int add_label(Label *head, char *name, int address, LabelType type)
 {
-    Label *newLabel;
+    Label *newLabel = NULL;
+    if (!head || !name)
+        return FAILURE;
+
     if (find_label(head, name) != NULL)
     {
         return ERROR_LABEL_ALREADY_EXISTS;
@@ -113,12 +116,17 @@ int add_label(Label *head, char *name, int address, LabelType type)
         head->next->prev = newLabel;
     }
     head->next = newLabel;
-    return 0;
+    return SUCCESS;
 }
 
 void free_label_table(Label *head)
 {
-    Label *temp;
+    Label *temp = NULL;
+    if (!head)
+    {
+        return;
+    }
+
     while (head != NULL)
     {
         temp = head;
@@ -134,7 +142,7 @@ void free_label_table(Label *head)
 
 void free_extern_label_table(ExternLabel *head)
 {
-    ExternLabel *temp;
+    ExternLabel *temp = NULL;
     while (head != NULL)
     {
         temp = head;
@@ -145,7 +153,11 @@ void free_extern_label_table(ExternLabel *head)
 
 int update_data_addresses(Label *head, int IC)
 {
-    Label *temp = head->next;
+    Label *temp = NULL;
+    if (!head)
+        return FAILURE;
+
+    temp = head->next;
     while (temp != NULL)
     {
         if (temp->type == DATA)
@@ -154,5 +166,5 @@ int update_data_addresses(Label *head, int IC)
         }
         temp = temp->next;
     }
-    return 0;
+    return SUCCESS;
 }
