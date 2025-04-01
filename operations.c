@@ -25,20 +25,29 @@ Operation OPERATIONS[NUM_OF_OPERATIONS] = {
 
 int get_register_index(char *register_name)
 {
-    int i;
-    /*Array of register names, from 0 to 7*/
-    char *register_names[] = {"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7"};
-
-    /*TODO: MAYBE CHANGE TO AN IF STATEMENT WITH 0 <= x <= 7 instead of looping*/
-    /*Searches for register name, if found, returns its index*/
-    for (i = 0; i < NUM_OF_REGISTERS; i++)
+    /*Check if register name is valid*/
+    if (register_name == NULL)
     {
-        if (strcmp(register_names[i], register_name) == 0)
-        {
-            return i;
-        }
+        return -1;
     }
-    return -1;
+
+    if (register_name[0] != 'r')
+    {
+        return -1;
+    }
+
+    if (strlen(register_name) != 2)
+    {
+        return -1;
+    }
+
+    if (register_name[1] < '0' || register_name[1] > '7')
+    {
+        return -1;
+    }
+
+    /*Convert register name to number of register*/
+    return register_name[1] - '0';
 }
 
 int is_operation_name(char *name)
@@ -295,26 +304,44 @@ int is_reserved_word(char *word)
 
 ErrorCode validate_data(char *word)
 {
+    int i = 0;
     if (word == NULL)
     {
-        return ERROR_NULL_PARAM;
+        return ERROR_NO_OPERAND;
     }
+
+    if (word[0] == ',' || word[strlen(word) - 1] == ',')
+    {
+        return ERROR_EXTRA_COMMA;
+    }
+
+    /*TODO: CHECK WITH DAD*/
+    for (i = 0; word[i] != '\0'; i++)
+    {
+        if (word[i] == ',' && word[i + 1] == ',')
+        {
+            return ERROR_EXTRA_COMMA;
+        }
+    }
+
     word = strtok(word, ",");
     while (word != NULL)
     {
 
         if (!is_integer(word, strlen(word)))
         {
-            /*
-            handle_line_error(ERROR_INVALID_NUMBER, line_number, word);
-            res = FALSE;
-            return res;
-            */
             return ERROR_INVALID_NUMBER;
         }
 
         word = strtok(NULL, ",");
     }
+
+    /*If there is extra content after numbers*/
+    if (word != NULL)
+    {
+        return ERROR_EXTRA_TEXT;
+    }
+
     return SUCCESS;
 }
 
@@ -322,15 +349,11 @@ ErrorCode validate_string(char *word)
 {
     if (word == NULL)
     {
-        return ERROR_INVALID_OPERAND_TYPE;
+        return ERROR_NO_OPERAND;
     }
     /*Check if word is a string*/
     if (word[0] != '"')
     {
-        /*
-        handle_line_error(ERROR_INVALID_STRING, line_number, word);
-        return FALSE;
-        */
         return ERROR_INVALID_STRING;
     }
     word++;
@@ -338,14 +361,14 @@ ErrorCode validate_string(char *word)
     {
         if (word[0] == '\0')
         {
-            /*
-            handle_line_error(ERROR_INVALID_STRING, line_number, word);
-            return FALSE;
-            */
             return ERROR_INVALID_STRING;
         }
 
         word++;
+    }
+    if (word[1] != '\0')
+    {
+        return ERROR_INVALID_STRING;
     }
     return SUCCESS;
 }
@@ -392,6 +415,7 @@ int is_integer(char *str, int len)
 ErrorCode validate_extern(char *word, MacroNode *macro_list)
 {
     ErrorCode result = SUCCESS;
+    char *extra_content = NULL;
     word = strtok(word, " ");
     if (word == NULL)
     {
@@ -399,17 +423,31 @@ ErrorCode validate_extern(char *word, MacroNode *macro_list)
         return ERROR_EXTERN_EMPTY_NAME;
     }
 
+    extra_content = strtok(NULL, " ");
+    if (extra_content != NULL)
+    {
+        /*Extra content found after extern label operation*/
+        return ERROR_EXTRA_TEXT;
+    }
     /*Check if operand is a valid label name*/
     result = validate_label_name(word, macro_list);
     return result;
 }
 ErrorCode validate_entry(char *word)
 {
+    char *extra_content = NULL;
     word = strtok(word, " ");
     if (word == NULL)
     {
         /*No data found*/
         return ERROR_EXTERN_EMPTY_NAME;
+    }
+
+    extra_content = strtok(NULL, " ");
+    if (extra_content != NULL)
+    {
+        /*Extra content found after entry label operation*/
+        return ERROR_EXTRA_TEXT;
     }
 
     return SUCCESS;

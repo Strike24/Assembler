@@ -30,9 +30,10 @@ int pre_assembler(char *filename, MacroNode *head)
 
 int macro_expansion(FILE *input_file, FILE *output_file, MacroNode *head)
 {
-    char line[MAX_LINE];      /*Buffer to hold each line in the file (fgets)*/
-    char line_copy[MAX_LINE]; /*Copy of the line buffer to be used because strtok changes line*/
-    char *word;
+    char line[MAX_LINE];           /*Buffer to hold each line in the file (fgets)*/
+    char line_copy[MAX_LINE];      /*Copy of the line buffer to be used because strtok changes line*/
+    char *word = NULL;             /*Pointer to the current word in the line*/
+    char *extra_content = NULL;    /*Extra content after the macro name / declartion*/
     int in_macro_creation = FALSE; /*Flag to indicate if the current line is inside a macro creation*/
     Macro *current_macro;          /*Pointer to the current macro being created*/
     ErrorObject error = {0};       /*Error object to be filled and passed to handle_error*/
@@ -57,10 +58,20 @@ int macro_expansion(FILE *input_file, FILE *output_file, MacroNode *head)
         {
             /*If not in macro creation, check if the current word is an existing macro*/
             current_macro = find_macro(head, word);
-            if (current_macro != NULL)
+            if (current_macro != NULL && current_macro->content != NULL)
             {
                 /*If the word is a macro, write the macro content to the output file instead of the macro name*/
-                /*TODO: HANDLE EXTRA CONTENT AFTER MACRO NAME*/
+                word = strtok(NULL, " \n\t");
+                if (word != NULL)
+                {
+                    /*If there are extra words after the macro name, return an error and move to the next line*/
+                    fill_error_object(ERROR_MACRO_EXTRA_CONTENT, line_number, word, &error);
+                    handle_error(&error);
+                    is_error = TRUE;
+                    continue;
+                }
+
+                /*Write the macro content to the output file instead of the origianl line*/
                 fprintf(output_file, "%s", current_macro->content);
             }
             else if (strcmp(word, "mcro") == 0)
@@ -87,6 +98,15 @@ int macro_expansion(FILE *input_file, FILE *output_file, MacroNode *head)
                 }
                 else
                 {
+                    extra_content = strtok(NULL, " \n\t");
+                    if (extra_content != NULL)
+                    {
+                        /*If there are extra words / chars after the macro name*/
+                        fill_error_object(ERROR_MACRO_DEC_EXTRA_CONTENT, line_number, extra_content, &error);
+                        handle_error(&error);
+                        is_error = TRUE;
+                        continue;
+                    }
                     /*Add the macro to the macro list and set the flag to indicate that we are in macro creation*/
                     error.code = add_macro(head, word);
                     if (error.code != SUCCESS)

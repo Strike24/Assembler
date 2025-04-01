@@ -178,7 +178,6 @@ int parse_line(char *line, int *IC, int *DC, int line_number, int *is_label, int
 
 LabelType validate_line(char *line, ErrorObject *error, int *is_label, int line_number, MacroNode *macro_list)
 {
-    /* TODO: VALIDATE WRONG ,*/
     char line_original[MAX_LINE];
     char *word;
     char *rest;

@@ -54,9 +54,15 @@ void handle_error(ErrorObject *error)
         {ERROR_MACRO_INVALID_START, "Macro name \"%s\" must start with an alphabetic character or underscore.\n", 1},
         {ERROR_MACRO_EMPTY_NAME, "Macro name cannot be empty.\n", 0},
         {ERROR_MACRO_ALREADY_EXISTS, "Macro named \"%s\" already decleared.\n", 1},
+        {ERROR_MACRO_EXTRA_CONTENT, "Extra content after macro name use: \"%s\".\n", 1},
+        {ERROR_MACRO_DEC_EXTRA_CONTENT, "Extra content after macro declaration: \"%s\".\n", 1},
         {ERROR_MEMORY_EXCEEDED, "* Memory address exceeded 2^21, only validating input from now on. *\n", 0},
         {ERROR_ENTRY_EMPTY_NAME, ".entry operand cannot be empty.\n", 0},
         {ERROR_EXTERN_EMPTY_NAME, ".extern operand cannot be empty.\n", 0},
+        {ERROR_EXTRA_COMMA, "Extra unnecessary comma in instruction or operation line.\n", 0},
+        {ERROR_EXTRA_TEXT, "Extra text after instruction or operation.\n", 0},
+        {ERROR_NO_OPERAND, "Operand is empty.\n", 0}
+
     };
     int i;
 
@@ -66,8 +72,7 @@ void handle_error(ErrorObject *error)
     }
     if (error->code == ERROR_MEMORY_ALLOCATION_FAILED)
     {
-        printf("CRITICAL ERROR (memory or other)\n");
-        /*TODO: FREE ALL MEMORY HERE*/
+        printf("CRITICAL MEMORY ERROR - Program cannot continue to execute.\nExiting program.\n");
         exit(1);
         return;
     }
