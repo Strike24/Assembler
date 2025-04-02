@@ -2,7 +2,7 @@
 
 MacroNode *init_macro_table()
 {
-    MacroNode *head = (MacroNode *)malloc(sizeof(MacroNode));
+    MacroNode *head = (MacroNode *)malloc(sizeof(MacroNode)); /*Allocate size of macro list head*/
     if (!head)
     {
         free(head);
@@ -14,32 +14,14 @@ MacroNode *init_macro_table()
     return head;
 }
 
-ErrorCode add_content_to_macro(MacroNode *macro_node, char *content, int len)
-{
-    macro_node->macro->content = (char *)malloc(len + 1);
-    if (!macro_node->macro->content)
-    {
-        free(macro_node->macro->name);
-        free(macro_node->macro);
-        return ERROR_MEMORY_ALLOCATION_FAILED;
-    }
-    /*
-    if (!newMacro->content)
-    {
-        free(newMacro->name);
-        free(newMacro);
-        return ERROR;
-    }
-        */
-
-    strcpy(macro_node->macro->content, content);
-    return SUCCESS;
-}
-
 ErrorCode add_macro(MacroNode *head, char *name)
 {
-    Macro *newMacro = (Macro *)malloc(sizeof(Macro));
-    MacroNode *newNode = (MacroNode *)malloc(sizeof(MacroNode));
+    Macro *newMacro = (Macro *)malloc(sizeof(Macro));            /*Allocate size of macro*/
+    MacroNode *newNode = (MacroNode *)malloc(sizeof(MacroNode)); /*Allocate size of macro node*/
+
+    if (!head || !name)
+        return ERROR_NULL_PARAM;
+
     if (!newMacro)
         return ERROR_MEMORY_ALLOCATION_FAILED;
     if (!newNode)
@@ -47,22 +29,25 @@ ErrorCode add_macro(MacroNode *head, char *name)
         free(newMacro);
         return ERROR_MEMORY_ALLOCATION_FAILED;
     }
-    newMacro->name = (char *)malloc(strlen(name) + 1);
+
+    newMacro->name = (char *)malloc(strlen(name) + 1); /*Allocate size of macro name*/
     if (!newMacro->name)
     {
         free(newMacro);
         free(newNode);
         return ERROR_MEMORY_ALLOCATION_FAILED;
     }
-    strcpy(newMacro->name, name);
-    newMacro->content = (char *)malloc(MAX_LINE * MAX_MACRO_LINES * sizeof(char));
+
+    strcpy(newMacro->name, name);                                                  /*Copy name to macro name*/
+    newMacro->content = (char *)malloc(MAX_LINE * MAX_MACRO_LINES * sizeof(char)); /*Allocate size of macro content to be 80 lines*/
     if (!newMacro->content)
     {
         free(newMacro->name);
         free(newMacro);
         return ERROR_MEMORY_ALLOCATION_FAILED;
     }
-    newMacro->content[0] = '\0';
+
+    newMacro->content[0] = '\0'; /*Initialize content to empty string*/
 
     newNode->macro = newMacro;
     newNode->next = head->next;
@@ -79,6 +64,7 @@ void free_macro_table(MacroNode *head)
         return;
     }
 
+    /*Loops over macro list and free every macro*/
     while (head != NULL)
     {
         temp = head;
@@ -104,7 +90,10 @@ Macro *find_macro(MacroNode *head, char *name)
     MacroNode *temp;
     if (head == NULL)
         return NULL;
+
     temp = head->next;
+
+    /*Loop over macro list and search for macro by name*/
     while (temp != NULL)
     {
         if (strcmp(temp->macro->name, name) == 0)
@@ -121,7 +110,10 @@ Macro *get_current_macro(MacroNode *head)
     MacroNode *temp;
     if (head == NULL || head->next == NULL)
         return NULL;
+
     temp = head;
+
+    /*Get last macro in the list*/
     while (temp->next != NULL)
     {
         temp = temp->next;
@@ -134,19 +126,25 @@ ErrorCode validate_macro_name(char *name, MacroNode *head)
 
     if (name == NULL)
         return ERROR_NULL_PARAM;
+
+    /*Validate macro name length*/
     if (strlen(name) == 0)
         return ERROR_MACRO_EMPTY_NAME;
     if (strlen(name) > MAX_MACRO_NAME)
         return ERROR_MACRO_NAME_TOO_LONG;
-    if (!isalpha(name[0]))
+
+    /*Check if first letter is alphabetic*/
+    if (!isalpha(name[0]) && name[0] != '_')
         return ERROR_MACRO_INVALID_START;
 
     if (is_reserved_word(name))
         return ERROR_MACRO_RESERVED_WORD;
 
+    /*Check if macro already created*/
     if (head && find_macro(head, name) != NULL)
         return ERROR_MACRO_ALREADY_EXISTS;
 
+    /*Check if all chars are alphanumeric or _ */
     while (name && (name[0] != '\0'))
     {
         if (!isalnum(name[0]) && (name[0] != '_'))
@@ -158,6 +156,8 @@ ErrorCode validate_macro_name(char *name, MacroNode *head)
 
 int is_macro(char *name, MacroNode *head)
 {
+    if (!name || !head)
+        return FALSE;
     if (find_macro(head, name) != NULL)
         return TRUE;
     return FALSE;

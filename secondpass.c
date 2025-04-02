@@ -309,6 +309,11 @@ int align_memory_to_bits(BinaryNode *code_image, BinaryNode *data_image)
     BinaryNode *current_node = code_image;
     BinaryLine *current_line;
     int i = 0;
+
+    if (!code_image || !data_image)
+    {
+        return ERROR;
+    }
     while (current_node->next != NULL)
     {
         if (current_node->line == NULL)

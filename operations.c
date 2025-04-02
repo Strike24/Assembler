@@ -1,7 +1,12 @@
 #include "operations.h"
 
-/*TODO: MAYBE MOVE INTO A FUNCTION TO PREVENT GLOBAL VARIABLE*/
-/*Constant operations array that holds information for each code operation.
+/*
+ operations.c
+ This file contains the implementation of the operation handling functions.
+ It defines the operations table, and holds functions to validate operations, instructions and operands.
+*/
+
+/* Constant operations array that holds information for each code operation.
 Table holds: name, opcode, funct, allowed source methods, allowed target methods*/
 Operation OPERATIONS[NUM_OF_OPERATIONS] = {
     {"mov", 0, 0, {IMMEDIATE, DIRECT, REGISTER, -1}, {DIRECT, REGISTER, -1}},
@@ -34,7 +39,7 @@ int get_register_index(char *register_name)
         return -1;
     }
 
-    if (strlen(register_name) != 2)
+    if (strlen(register_name) != REGISTER_NAME_LENGTH)
     {
         return -1;
     }
@@ -44,25 +49,35 @@ int get_register_index(char *register_name)
         return -1;
     }
 
-    /*Convert register name to number of register*/
+    /*get number of register from 1 - 7*/
     return register_name[1] - '0';
 }
 
 int is_operation_name(char *name)
 {
-    int i;
-    for (i = 0; i < NUM_OF_OPERATIONS; i++)
+    Operation *operation = NULL;
+    if (name == NULL)
     {
-        if (strcmp(OPERATIONS[i].name, name) == 0)
-        {
-            return TRUE;
-        }
+        return FALSE;
+    }
+
+    /*Check if name is a valid operation by searching in the operations table*/
+    operation = get_operation(name);
+    if (operation != NULL)
+    {
+        return TRUE;
     }
     return FALSE;
 }
 
 int is_register_name(char *name)
 {
+    if (name == NULL)
+    {
+        return FALSE;
+    }
+
+    /*Check if name is a valid register name by searching in the register table*/
     if (get_register_index(name) != -1)
     {
         return TRUE;
@@ -73,34 +88,47 @@ int is_register_name(char *name)
 Operation *get_operation(char *name)
 {
     int i;
+    if (name == NULL)
+    {
+        return NULL; /*Operation name is NULL*/
+    }
+
+    /*Search for the operation name in the operations table*/
     for (i = 0; i < NUM_OF_OPERATIONS; i++)
     {
         if (strcmp(OPERATIONS[i].name, name) == 0)
         {
-            return &OPERATIONS[i];
+            return &OPERATIONS[i]; /*Return pointer to the operation details*/
         }
     }
-    return NULL;
+    return NULL; /*Operation not found*/
 }
 
 OperandType *get_allowed_addressing_methods(char *name, int source_or_target)
 {
-    int i;
-    for (i = 0; i < NUM_OF_OPERATIONS; i++)
+    Operation *operation = NULL;
+    if (name == NULL)
     {
-        if (strcmp(OPERATIONS[i].name, name) == 0)
-        {
-            /*If source_or_target is SOURCE, return the allowed source methods. if target, return allowed target*/
-            if (source_or_target == SOURCE)
-            {
-                return OPERATIONS[i].allowed_source;
-            }
-            else if (source_or_target == TARGET)
-            {
-                return OPERATIONS[i].allowed_target;
-            }
-        }
+        return NULL;
     }
+
+    /*Get operation from the operations table*/
+    operation = get_operation(name);
+    if (operation == NULL)
+    {
+        return NULL; /*Operation not found*/
+    }
+
+    /*If source_or_target is SOURCE, return the allowed source methods. if target, return allowed target methods*/
+    if (source_or_target == SOURCE)
+    {
+        return operation->allowed_source;
+    }
+    else if (source_or_target == TARGET)
+    {
+        return operation->allowed_target;
+    }
+
     return NULL;
 }
 
@@ -111,7 +139,7 @@ int is_data_operation(char *word)
         return FALSE;
     }
     /*Check if word is .data or .string which is a data operation*/
-    if ((strcmp(word, ".data") == 0) || (strcmp(word, ".string") == 0))
+    if ((strcmp(word, DATA_INSTRUCTION) == 0) || (strcmp(word, STRING_INSTRUCTION) == 0))
     {
         return TRUE;
     }
@@ -125,7 +153,7 @@ int is_extern_operation(char *word)
         return FALSE;
     }
     /*Check if word is .extern which is an extern operation*/
-    if (strcmp(word, ".extern") == 0)
+    if (strcmp(word, EXTERN_INSTRUCTION) == 0)
     {
         return TRUE;
     }
@@ -139,7 +167,7 @@ int is_entry_operation(char *word)
         return FALSE;
     }
     /*Check if word is .entry which is an entry operation*/
-    if (strcmp(word, ".entry") == 0)
+    if (strcmp(word, ENTRY_INSTRUCTION) == 0)
     {
         return TRUE;
     }
@@ -163,29 +191,29 @@ int is_label_dec(char *word_original, int line_number, ErrorObject *error, Macro
     char *colon = NULL;
     ErrorCode result = SUCCESS;
 
-    if (word_original == NULL)
+    if (!word_original)
     {
         return FALSE;
     }
-    /*Copy word to new string to avoid strtok changes*/
+
+    /*Copy word to new string to avoid strtok changing the original*/
     word = (char *)malloc(strlen(word_original) + 1);
     strcpy(word, word_original);
     colon = strchr(word, ':');
-    if (colon == NULL) /*Check if : are existent*/
+    if (colon == NULL) /*Check if the ":" are existent*/
     {
         free(word);
         return FALSE;
     }
-    /*Check if there is a space after :*/
+    /*Check if there is a space after the ":"*/
     if (*(colon + 1) == ' ')
     {
         free(word);
         return FALSE;
     }
-    /*Remove : from word*/
+    /*Remove the ":" from word*/
     *colon = '\0';
 
-    /*Check if label is valid*/
     /*Check that there were no spaces before :*/
     if (word[strlen(word) - 1] == ' ')
     {
@@ -199,6 +227,7 @@ int is_label_dec(char *word_original, int line_number, ErrorObject *error, Macro
     {
         if (error)
             fill_error_object(result, line_number, word, error);
+        /*If name is invalid, its still a valid declaration. fill error object but return true*/
     }
 
     free(word);
@@ -208,17 +237,17 @@ int is_label_dec(char *word_original, int line_number, ErrorObject *error, Macro
 ErrorCode validate_label_name(char *word, MacroNode *macro_list)
 {
     int i;
-    if (word == NULL)
+    if (!macro_list)
     {
-        /* handle_line_error(ERROR_LABEL_EMPTY_NAME, line_number, word);
-        return FALSE; */
+        return ERROR_NULL_PARAM;
+    }
+    if (!word)
+    {
         return ERROR_LABEL_EMPTY_NAME;
     }
     /*Check maximum length of label*/
     if (strlen(word) > MAX_LABEL)
     {
-        /*  handle_line_error(ERROR_LABEL_NAME_TOO_LONG, line_number, word);
-         return FALSE; */
         return ERROR_LABEL_NAME_TOO_LONG;
     }
 
@@ -237,14 +266,12 @@ ErrorCode validate_label_name(char *word, MacroNode *macro_list)
     /*Check if label letters are alphabatic or digits*/
     for (i = 1; (i < strlen(word)); i++)
     {
-        if (!isalnum(word[i]))
+        if (!isalnum(word[i])) /*If word[i] is not alphanumeric*/
         {
-            if ((i == strlen(word) - 1) && (word[i] == '\n'))
+            if ((i == strlen(word) - 1) && (word[i] == '\n')) /*If last char is \n, its valid*/
                 return TRUE;
             else
             {
-                /*  handle_line_error(ERROR_LABEL_NOT_ALPHANUMERIC, line_number, word);
-                 return FALSE; */
                 return ERROR_LABEL_NOT_ALPHANUMERIC;
             }
         }
@@ -252,12 +279,10 @@ ErrorCode validate_label_name(char *word, MacroNode *macro_list)
     /*Check if label is a reserved word*/
     if (is_reserved_word(word))
     {
-        /*  handle_line_error(ERROR_LABEL_RESERVED_WORD, line_number, word);
-         return FALSE; */
         return ERROR_LABEL_RESERVED_WORD;
     }
 
-    /*Check if label is a macro name*/
+    /*Check if label is already a macro name (macro names can't be used for labels)*/
     if (is_macro(word, macro_list))
     {
         return ERROR_LABEL_IS_MACRO_NAME;
@@ -308,11 +333,13 @@ ErrorCode validate_data(char *word)
         return ERROR_NO_OPERAND;
     }
 
+    /*Check if theres an extra comma at the start or end*/
     if (word[0] == ',' || word[strlen(word) - 1] == ',')
     {
         return ERROR_EXTRA_COMMA;
     }
 
+    /*Check if there are two commas in a row*/
     for (i = 0; word[i] != '\0'; i++)
     {
         if (word[i] == ',' && word[i + 1] == ',')
@@ -321,8 +348,8 @@ ErrorCode validate_data(char *word)
         }
     }
 
-    word = strtok(word, ",");
-    while (word != NULL)
+    word = strtok(word, ","); /*Split the string by commas*/
+    while (word != NULL)      /*For every operand seperated by a comma, check if valid number*/
     {
 
         if (!is_integer(word, strlen(word)))
@@ -354,7 +381,7 @@ ErrorCode validate_string(char *word)
         return ERROR_INVALID_STRING;
     }
     word++;
-    while (word[0] != '"')
+    while (word[0] != '"') /*Loop until finding the end quotes. if found \0 before it, string doesn't end in quotes.*/
     {
         if (word[0] == '\0')
         {
@@ -363,7 +390,7 @@ ErrorCode validate_string(char *word)
 
         word++;
     }
-    if (word[1] != '\0')
+    if (word[1] != '\0') /*Check if there is extra content after the end of the string*/
     {
         return ERROR_INVALID_STRING;
     }
@@ -377,35 +404,36 @@ int is_integer(char *str, int len)
     if (str == NULL)
         return 0;
 
-    while ((i < len) && (str[0] == ' ' || str[0] == '\t'))
+    while ((i < len) && (str[0] == ' ' || str[0] == '\t')) /*Skip spaces at the start*/
     {
         str++;
         i++;
     }
 
-    if ((i < len) && (str[0] == '+' || str[0] == '-'))
+    if ((i < len) && (str[0] == '+' || str[0] == '-')) /*Check if start is + or -, skip if found*/
     {
         str++;
         i++;
     }
 
-    if ((i < len) && !isdigit(str[0]))
+    if ((i < len) && !isdigit(str[0])) /*Check if first char is digit*/
     {
         return FALSE;
     }
 
-    while ((i < len) && isdigit(str[0]))
+    while ((i < len) && isdigit(str[0])) /*Loop over rest of the chars, skip if found a digit*/
     {
         str++;
         i++;
     }
 
-    while ((i < len) && (str[0] == ' ' || str[0] == '\t' || str[0] == '\n'))
+    while ((i < len) && (str[0] == ' ' || str[0] == '\t' || str[0] == '\n')) /*Skip spaces, tabs and new line at the end*/
     {
         str++;
         i++;
     }
 
+    /*If str[0] is not \0, the string is not a number because we didn't skip all of the chars (which means they are invalid)*/
     return str[0] == '\0';
 }
 
@@ -414,7 +442,11 @@ ErrorCode validate_extern(char *word, MacroNode *macro_list)
     ErrorCode result = SUCCESS;
     char *extra_content = NULL;
     word = strtok(word, " ");
-    if (word == NULL)
+    if (!macro_list)
+    {
+        return ERROR_NULL_PARAM;
+    }
+    if (!word)
     {
         /*No data found*/
         return ERROR_EXTERN_EMPTY_NAME;
@@ -430,9 +462,15 @@ ErrorCode validate_extern(char *word, MacroNode *macro_list)
     result = validate_label_name(word, macro_list);
     return result;
 }
+
 ErrorCode validate_entry(char *word)
 {
     char *extra_content = NULL;
+    if (word == NULL)
+    {
+        return ERROR_NO_OPERAND;
+    }
+
     word = strtok(word, " ");
     if (word == NULL)
     {
@@ -458,40 +496,36 @@ ErrorCode validate_code(char *operation, char *oprands)
     OperandType current_oprand_type = NONE;
     int i = 0;
     int result = SUCCESS;
+    if (operation == NULL)
+    {
+        return ERROR_NULL_PARAM;
+    }
 
-    allowed_source_methods = get_allowed_addressing_methods(operation, SOURCE);
-    allowed_target_methods = get_allowed_addressing_methods(operation, TARGET);
+    allowed_source_methods = get_allowed_addressing_methods(operation, SOURCE); /*Get allowed source methods*/
+    allowed_target_methods = get_allowed_addressing_methods(operation, TARGET); /*Get allowed target methods*/
 
     if (allowed_source_methods == NULL || allowed_target_methods == NULL)
     {
         return ERROR;
     }
-    oprands = strtok(oprands, ",");
+    oprands = strtok(oprands, ","); /*Split the oprands by commas*/
 
-    if (allowed_source_methods[0] != NONE)
+    if (allowed_source_methods[0] != NONE) /*if source operands are allowed for operation*/
     {
         if (oprands == NULL)
         {
             /*Error: No oprands found, but needed for command*/
-            /*
-            handle_line_error(ERROR_INVALID_AMOUNT_OF_OPERANDS, line_number, operation);
-            return FALSE;
-            */
             return ERROR_INVALID_AMOUNT_OF_OPERANDS;
         }
         current_oprand_type = get_operand_type(oprands);
-        if (current_oprand_type == -1)
+        if (current_oprand_type == NONE)
         {
             /*Error: Operand type is not defined*/
-            /*
-            handle_line_error(ERROR_INVALID_OPERAND_TYPE, line_number, oprands);
-            return FALSE;
-            */
             return ERROR_INVALID_OPERAND_TYPE;
         }
-        for (i = 0; allowed_source_methods[i] != -1; i++)
+        for (i = 0; allowed_source_methods[i] != END_OF_ARRAY; i++) /*Loop over allowed source types*/
         {
-            if (allowed_source_methods[i] == current_oprand_type)
+            if (allowed_source_methods[i] == current_oprand_type) /*If operand type is allowed, skip to next operand. mark as success*/
             {
                 oprands = strtok(NULL, ",");
                 result = SUCCESS;
@@ -500,26 +534,22 @@ ErrorCode validate_code(char *operation, char *oprands)
             result = ERROR;
         }
     }
-    if (allowed_target_methods[0] != NONE)
+    if (allowed_target_methods[0] != NONE) /*if target operands are allowed for operation*/
     {
         if (oprands == NULL)
         {
             /*Error: No oprands found, but needed for command*/
-            /* handle_line_error(ERROR_INVALID_AMOUNT_OF_OPERANDS, line_number, operation);
-            return FALSE; */
             return ERROR_INVALID_AMOUNT_OF_OPERANDS;
         }
         current_oprand_type = get_operand_type(oprands);
-        if (current_oprand_type == -1)
+        if (current_oprand_type == NONE)
         {
             /*Error: Operand type is not defined*/
-            /* handle_line_error(ERROR_INVALID_OPERAND_TYPE, line_number, oprands);
-            return FALSE; */
             return ERROR_INVALID_OPERAND_TYPE;
         }
-        for (i = 0; allowed_target_methods[i] != -1; i++)
+        for (i = 0; allowed_target_methods[i] != END_OF_ARRAY; i++) /*Loop over allowed target types*/
         {
-            if (allowed_target_methods[i] == current_oprand_type)
+            if (allowed_target_methods[i] == current_oprand_type) /*If operand type is allowed, skip to next operand. mark as success*/
             {
                 oprands = strtok(NULL, ",");
                 result = SUCCESS;
@@ -533,15 +563,8 @@ ErrorCode validate_code(char *operation, char *oprands)
     if (oprands != NULL)
     {
         /*Error: Too many oprands*/
-        /* handle_line_error(ERROR_INVALID_AMOUNT_OF_OPERANDS, line_number, operation);
-        return FALSE; */
         return ERROR_INVALID_AMOUNT_OF_OPERANDS;
     }
-    /*
-        if (result == FALSE)
-        {
-            handle_line_error(ERROR_OPERAND_NOT_ALLOWED, line_number, operation);
-        } */
     if (result == ERROR)
     {
         return ERROR_OPERAND_NOT_ALLOWED;
@@ -552,6 +575,10 @@ ErrorCode validate_code(char *operation, char *oprands)
 
 int get_operand_type(char *word)
 {
+    if (!word)
+    {
+        return NONE;
+    }
     if (is_immediate(word))
     {
         return IMMEDIATE;
@@ -573,10 +600,15 @@ int get_operand_type(char *word)
 
 int is_immediate(char *word)
 {
-    if (word[0] == '#')
+    if (!word)
+    {
+        return FALSE;
+    }
+
+    if (word[0] == '#') /*Immidiate operands start with #*/
     {
         word++;
-        if (is_integer(word, strlen(word)))
+        if (is_integer(word, strlen(word))) /*Immediate operands are a valid integer*/
         {
             return TRUE;
         }
@@ -585,17 +617,19 @@ int is_immediate(char *word)
 }
 int is_direct(char *word)
 {
-    /*
-    if (is_legal_label_name(word))
+    if (!word)
     {
-        return TRUE;
+        return FALSE;
     }
-        */
 
     return TRUE;
 }
 int is_relative(char *word)
 {
+    if (!word)
+    {
+        return FALSE;
+    }
     if (word[0] == '&')
     {
         /*
@@ -611,6 +645,10 @@ int is_relative(char *word)
 }
 int is_register(char *word)
 {
+    if (!word)
+    {
+        return FALSE;
+    }
     if (is_register_name(word))
     {
         return TRUE;

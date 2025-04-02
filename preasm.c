@@ -91,7 +91,7 @@ int macro_expansion(FILE *input_file, FILE *output_file, MacroNode *head)
 
             /*If the word is the end of the macro creation, set the flag to indicate that we are no longer in macro creation*/
             /*do not print this line to the file*/
-            if (strcmp(word, MACRO_DECLERATION_SUFFIX) == 0)
+            if (strcmp(word, MACRO_DECLARATION_SUFFIX) == 0)
             {
                 in_macro_creation = FALSE;
             }
@@ -134,7 +134,7 @@ int process_line(MacroNode *head, FILE *output_file, char *word, int *in_macro_c
         /*Write the macro content to the output file instead of the origianl line*/
         fprintf(output_file, "%s", current_macro->content);
     }
-    else if (strcmp(word, MACRO_DECLERATION_PREFIX) == 0)
+    else if (strcmp(word, MACRO_DECLARATION_PREFIX) == 0)
     {
         /* If started macro creating, move word pointer to next word in the line*/
         word = strtok(NULL, " \n\t");

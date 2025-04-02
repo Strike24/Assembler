@@ -63,7 +63,7 @@ int parse_line(char *line, int *IC, int *DC, int line_number, int *memory_exceed
     int is_label = FALSE;
     char line_original[MAX_LINE] = {0};
     char *word = line_original;
-    BinaryLine binaryLine;
+    BinaryLine *binaryLine;
     /*validate_line will return the operation type for each line of code*/
     LabelType symbol = 0;
     ErrorObject error = {0};
@@ -91,7 +91,7 @@ int parse_line(char *line, int *IC, int *DC, int line_number, int *memory_exceed
             return TRUE;
         }
 
-        word[strlen(word) - 1] = '\0'; /*Remove the ':' from the label decleration, validate_line will validate there is ':'*/
+        word[strlen(word) - 1] = '\0'; /*Remove the ':' from the label declaration, validate_line will validate there is ':'*/
         if (symbol == EXTERNAL || symbol == ENTRY)
         {
             /*If line is an extern or entry instruction, labels decleared before it will be ignored by the assembler*/
@@ -141,7 +141,6 @@ int parse_line(char *line, int *IC, int *DC, int line_number, int *memory_exceed
             return TRUE;
         }
 
-        /*TODO: MAYBE CHANGE code_binary AND data_binary to work with pointers instead of by value*/
         /*Code line to binary and save it to the binary image*/
         switch (symbol)
         {

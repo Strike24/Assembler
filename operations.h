@@ -57,15 +57,22 @@ int is_label_dec(char *word_original, int line_number, ErrorObject *error, Macro
 /*Detect if word is a reserved word*/
 int is_reserved_word(char *word);
 
-/*Validate line operands and format based on operation*/
+/*Validate line operands and format based on operation:*/
 
+/*Validates format of .data instruction*/
 ErrorCode validate_data(char *word);
-ErrorCode validate_extern(char *word, MacroNode *macro_list);
-ErrorCode validate_entry(char *word);
+/*Validates format of .string instruction*/
 ErrorCode validate_string(char *word);
+/*Validates format of .extern instruction*/
+ErrorCode validate_extern(char *word, MacroNode *macro_list);
+/*Validates format of .entry instruction*/
+ErrorCode validate_entry(char *word);
 /*Validates format of operands and allowed addressing methods based on operation name.*/
 ErrorCode validate_code(char *operation, char *oprands);
+
+/*Checks if a string is a valid integer*/
 int is_integer(char *str, int len);
+/*Checks if a string is a valid label name*/
 ErrorCode validate_label_name(char *word, MacroNode *macro_list);
 
 /*Addressing Method Validation*/
@@ -74,5 +81,6 @@ int is_immediate(char *word);
 int is_direct(char *word);
 int is_relative(char *word);
 int is_register(char *word);
+/*Returns the type of the operand based on the word*/
 int get_operand_type(char *word);
 #endif

@@ -6,7 +6,7 @@
 
 BinaryNode *init_binary_image()
 {
-    BinaryNode *head = (BinaryNode *)malloc(sizeof(BinaryNode));
+    BinaryNode *head = (BinaryNode *)malloc(sizeof(BinaryNode)); /*Allocates size for binary node*/
     if (!head)
     {
         return NULL;
@@ -17,28 +17,29 @@ BinaryNode *init_binary_image()
     return head;
 }
 
-int add_binary_line(BinaryLine binaryLine, BinaryNode *head)
+int add_binary_line(BinaryLine *binaryLine, BinaryNode *head)
 {
-    BinaryNode *newNode = (BinaryNode *)malloc(sizeof(BinaryNode));
+    BinaryNode *newNode = (BinaryNode *)malloc(sizeof(BinaryNode)); /*Allocates size for binary node*/
     if (!newNode)
     {
+        handle_system_error(ERROR_MEMORY_ALLOCATION_FAILED);
         return ERROR;
     }
-    newNode->line = (BinaryLine *)malloc(sizeof(BinaryLine));
-    if (!newNode->line)
+    if (!binaryLine || !head)
     {
         free(newNode);
         return ERROR;
     }
-    memcpy(newNode->line, &binaryLine, sizeof(BinaryLine));
+    newNode->line = binaryLine; /*Set line of new node to binary line*/
+
     newNode->next = head->next; /*Insert at start of list, after head*/
     newNode->prev = head;
     if (head->next != NULL)
     {
-        head->next->prev = newNode;
+        head->next->prev = newNode; /*Set prev of next node to new node*/
     }
 
-    head->next = newNode;
+    head->next = newNode; /*Set next of head to new node*/
 
     return 0;
 }
@@ -52,6 +53,7 @@ void free_binary_image(BinaryNode *head)
         return;
     }
 
+    /*Free the list by looping over it and freeing every BinaryNode*/
     while (head != NULL)
     {
         temp = head;
@@ -72,6 +74,7 @@ void free_binary_image(BinaryNode *head)
 BinaryLine *find_by_line_number(BinaryNode *head, int line_number)
 {
     BinaryNode *current = head->next;
+    /*Search BianryNode by source code line number and return pointer*/
     while (current != NULL)
     {
         if (current->line->sourcecode_line_number == line_number)
@@ -83,41 +86,50 @@ BinaryLine *find_by_line_number(BinaryNode *head, int line_number)
     return NULL;
 }
 
-BinaryLine code_binary(int *IC, char *line, int sourcecode_line_number)
+BinaryLine *code_binary(int *IC, char *line, int sourcecode_line_number)
 {
-    BinaryLine binaryLine = {0, 0, 0, 0};
     Operation *operation = NULL;
     char line_original[MAX_LINE] = {0};
     char *word = NULL;
     OperandType current_oprand_type = NONE;
+    BinaryLine *binaryLine = (BinaryLine *)malloc(sizeof(BinaryLine));
 
-    strcpy(line_original, line);
-    binaryLine.address = *IC;
-    binaryLine.num_of_lines = 1;
-    binaryLine.sourcecode_line_number = sourcecode_line_number;
-    /*binaryLine.code = 0;*/
-    binaryLine.code = (unsigned int *)malloc(sizeof(unsigned int) * MAX_OPERANDS + 1);
-    if (!binaryLine.code)
+    if (!binaryLine)
     {
         handle_system_error(ERROR_MEMORY_ALLOCATION_FAILED);
-        return binaryLine;
+        return NULL;
     }
-    memset(binaryLine.code, 0, sizeof(unsigned int) * MAX_OPERANDS + 1);
+    if (!line || !IC)
+    {
+        return NULL;
+    }
+
+    strcpy(line_original, line);
+    binaryLine->address = *IC;
+    binaryLine->num_of_lines = 1;
+    binaryLine->sourcecode_line_number = sourcecode_line_number;
+
+    binaryLine->code = (unsigned int *)malloc(sizeof(unsigned int) * MAX_OPERANDS + 1);
+    if (!binaryLine->code)
+    {
+        handle_system_error(ERROR_MEMORY_ALLOCATION_FAILED);
+        return NULL;
+    }
+    memset(binaryLine->code, 0, sizeof(unsigned int) * MAX_OPERANDS + 1);
 
     word = strtok(line, " \t\n");
     if (word == NULL)
     {
-        return binaryLine;
+        return NULL; /*this line will never be reached because we already validated the line*/
     }
     operation = get_operation(word);
     if (operation == NULL)
     {
-        printf("Error: Invalid operation %s\n", word);
-        return binaryLine;
+        return NULL; /*this line will never be reached because we already validated the line*/
     }
 
-    binaryLine.code[OPERATION_LINE_INDEX] |= get_code_for_operation(operation);
-    binaryLine.code[OPERATION_LINE_INDEX] |= 1U << A_OFFSET; /*Set A bit to 1 - Absolute*/
+    binaryLine->code[OPERATION_LINE_INDEX] |= get_code_for_operation(operation);
+    binaryLine->code[OPERATION_LINE_INDEX] |= 1U << A_OFFSET; /*Set A bit to 1 - Absolute*/
 
     word = strtok(NULL, ""); /*get rest of line*/
     trim(word);
@@ -129,19 +141,19 @@ BinaryLine code_binary(int *IC, char *line, int sourcecode_line_number)
         switch (current_oprand_type)
         {
         case REGISTER:
-            binaryLine.code[OPERATION_LINE_INDEX] |= get_code_for_register(word, TRUE);
+            binaryLine->code[OPERATION_LINE_INDEX] |= get_code_for_register(word, TRUE);
             break;
         case IMMEDIATE:
-            binaryLine.code[OPERATION_LINE_INDEX] |= IMMEDIATE << ADD_MTD_SRC_OFFSET;
-            add_line_for_immidiate(word, &binaryLine);
+            binaryLine->code[OPERATION_LINE_INDEX] |= IMMEDIATE << ADD_MTD_SRC_OFFSET;
+            add_line_for_immidiate(word, binaryLine);
             break;
         case DIRECT:
-            binaryLine.code[OPERATION_LINE_INDEX] |= DIRECT << ADD_MTD_SRC_OFFSET;
-            add_empty_line(&binaryLine);
+            binaryLine->code[OPERATION_LINE_INDEX] |= DIRECT << ADD_MTD_SRC_OFFSET;
+            add_empty_line(binaryLine);
             break;
         case RELATIVE:
-            binaryLine.code[OPERATION_LINE_INDEX] |= RELATIVE << ADD_MTD_SRC_OFFSET;
-            add_empty_line(&binaryLine);
+            binaryLine->code[OPERATION_LINE_INDEX] |= RELATIVE << ADD_MTD_SRC_OFFSET;
+            add_empty_line(binaryLine);
             break;
         default:
             break;
@@ -155,26 +167,26 @@ BinaryLine code_binary(int *IC, char *line, int sourcecode_line_number)
         switch (current_oprand_type)
         {
         case REGISTER:
-            binaryLine.code[OPERATION_LINE_INDEX] |= get_code_for_register(word, FALSE);
+            binaryLine->code[OPERATION_LINE_INDEX] |= get_code_for_register(word, FALSE);
             break;
         case IMMEDIATE:
-            binaryLine.code[OPERATION_LINE_INDEX] |= IMMEDIATE << ADD_MTD_DEST_OFFSET;
-            add_line_for_immidiate(word, &binaryLine);
+            binaryLine->code[OPERATION_LINE_INDEX] |= IMMEDIATE << ADD_MTD_DEST_OFFSET;
+            add_line_for_immidiate(word, binaryLine);
             break;
         case DIRECT:
-            binaryLine.code[OPERATION_LINE_INDEX] |= DIRECT << ADD_MTD_DEST_OFFSET;
-            add_empty_line(&binaryLine);
+            binaryLine->code[OPERATION_LINE_INDEX] |= DIRECT << ADD_MTD_DEST_OFFSET;
+            add_empty_line(binaryLine);
             break;
         case RELATIVE:
-            binaryLine.code[OPERATION_LINE_INDEX] |= RELATIVE << ADD_MTD_DEST_OFFSET;
-            add_empty_line(&binaryLine);
+            binaryLine->code[OPERATION_LINE_INDEX] |= RELATIVE << ADD_MTD_DEST_OFFSET;
+            add_empty_line(binaryLine);
             break;
         default:
             break;
         }
     }
 
-    (*IC) += binaryLine.num_of_lines;
+    (*IC) += binaryLine->num_of_lines;
     return binaryLine;
 }
 
@@ -232,36 +244,47 @@ void add_empty_line(BinaryLine *binaryLine)
     }
 }
 
-BinaryLine data_binary(int *DC, char *line, int sourcecode_line_number)
+BinaryLine *data_binary(int *DC, char *line, int sourcecode_line_number)
 {
-    BinaryLine binaryLine = {0, 0, 0, 0};
+    BinaryLine *binaryLine = (BinaryLine *)malloc(sizeof(BinaryLine));
     char line_original[MAX_LINE] = {0};
     char *word = NULL;
 
+    if (!binaryLine)
+    {
+        handle_system_error(ERROR_MEMORY_ALLOCATION_FAILED);
+        return NULL;
+    }
+
+    if (!line || !DC)
+    {
+        free(binaryLine);
+        return NULL;
+    }
+
     strcpy(line_original, line);
-    binaryLine.address = *DC;
-    binaryLine.num_of_lines = 0;
-    binaryLine.sourcecode_line_number = sourcecode_line_number;
-    /*binaryLine.code = 0;*/
+    binaryLine->address = *DC;
+    binaryLine->num_of_lines = 0;
+    binaryLine->sourcecode_line_number = sourcecode_line_number;
 
     word = strtok(line, " \t\n");
     if (word == NULL)
     {
-        return binaryLine; /*this line will never be reached because we already validated the line*/
+        return NULL; /*this line will never be reached because we already validated the line*/
     }
 
     if (strcmp(word, STRING_INSTRUCTION) == 0)
     {
-        if (code_string_instruction(word, &binaryLine) == FAILURE)
-            return binaryLine;
+        if (code_string_instruction(word, binaryLine) == FAILURE)
+            return NULL;
     }
-    else if (strcmp(word, DATA_INSTURCTION) == 0)
+    else if (strcmp(word, DATA_INSTRUCTION) == 0)
     {
-        if (code_data_instruction(word, &binaryLine) == FAILURE)
-            return binaryLine;
+        if (code_data_instruction(word, binaryLine) == FAILURE)
+            return NULL;
     }
 
-    (*DC) += binaryLine.num_of_lines;
+    (*DC) += binaryLine->num_of_lines;
     return binaryLine;
 }
 

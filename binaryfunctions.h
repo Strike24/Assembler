@@ -26,15 +26,15 @@ typedef struct BinaryNode
 
 /*Function for converting source code of commands to binary code
 Returns a BinaryLine with single or multiple binary lines that represent a command and its operands*/
-BinaryLine code_binary(int *IC, char *line, int sourcecode_line_number);
+BinaryLine *code_binary(int *IC, char *line, int sourcecode_line_number);
 
 /*Function for converting source code of data to binary code
 Returns BinaryLine that represents the encoded data*/
-BinaryLine data_binary(int *DC, char *line, int sourcecode_line_number);
+BinaryLine *data_binary(int *DC, char *line, int sourcecode_line_number);
 
 /*Initialize linked list of BinaryNode(s), returns pointer to head*/
 BinaryNode *init_binary_image();
-int add_binary_line(BinaryLine binaryLine, BinaryNode *head);
+int add_binary_line(BinaryLine *binaryLine, BinaryNode *head);
 void free_binary_image(BinaryNode *head);
 /*Find a BinaryLine by its source code line number and returns a pointer to it*/
 BinaryLine *find_by_line_number(BinaryNode *head, int line_number);

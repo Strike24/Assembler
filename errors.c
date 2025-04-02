@@ -1,5 +1,52 @@
 #include "errors.h"
 
+/*
+ errors.c
+ This file contains the implementation of the error handling functions.
+ It defines the error codes, error messages, and the functions to handle errors.
+*/
+
+/* Constant table for error messages. defines an error message for each error code to be used when handling errors */
+Error errors[SIZEOF_ERRORS_ARRAY] = {
+    {ERROR_MEMORY_ALLOCATION_FAILED, "Memory allocation failed, exiting the program.\n", 0},
+    {ERROR_FILE_NOT_FOUND, "File with filename \"%s\" not found in the file system.\n", 1},
+    {ERROR_FILE_OPEN_FAILED, "Could not create new file.\n", 0},
+    {ERROR_FILE_CLOSE_FAILED, "Could not close the file.\n", 0},
+    {ERROR_LINE_TOO_LONG, "Line exceeds maximum amount of characters %s.\n", 1},
+    {ERROR_LABEL_ALREADY_EXISTS, "Label named \"%s\" already decleared.\n", 1},
+    {ERROR_LABEL_NOT_DEFINED, "Label named \"%s\" is not defined.\n", 1},
+    {ERROR_LABEL_NAME_TOO_LONG, "Label name \"%s\" exceeds maximum amount of 30 characters.\n", 1},
+    {ERROR_LABEL_INVALID_START, "Label name \"%s\" must start with an alphabetic character.\n", 1},
+    {ERROR_LABEL_EMPTY_NAME, "Label name cannot be empty.\n", 0},
+    {ERROR_LABEL_NOT_ALPHANUMERIC, "Label name \"%s\" must contain only alphabetic characters and digits.\n", 1},
+    {ERROR_LABEL_RESERVED_WORD, "Label name \"%s\" is a reserved word.\n", 1},
+    {ERROR_LABEL_IS_MACRO_NAME, "Label name \"%s\" is a macro name.\n", 1},
+    {ERROR_LABEL_EMPTY_LINE, "Label can't be decleared on an empty line\n", 0},
+    {ERROR_LABEL_IS_EXTERNAL, "Label \"%s\" is an external label and cannot be used as an entry.\n", 1},
+    {ERROR_INVALID_OPERATION_TYPE, "Word \"%s\" is not a defined operation / instruction type.\n", 1},
+    {ERROR_INVALID_NUMBER, "One or more of the .data paramters are not valid numbers.\n", 0},
+    {ERROR_INVALID_STRING, "%s is not a valid string.\n", 1},
+    {ERROR_INVALID_OPERAND_TYPE, "\"%s\" is not a valid operand type.\n", 1},
+    {ERROR_INVALID_AMOUNT_OF_OPERANDS, "Invalid amount of operands for operation \"%s\".\n", 1},
+    {ERROR_OPERAND_NOT_ALLOWED, "Invalid operand type for operation \"%s\".\n", 1},
+    {ERROR_MACRO_NAME_TOO_LONG, "Macro name \"%s\" exceeds maximum amount of 30 characters.\n", 1},
+    {ERROR_MACRO_NOT_ALPHANUMERIC, "Macro name \"%s\" must contain only alphabetic characters, digits, and underscores.\n", 1},
+    {ERROR_MACRO_NOT_DEFINED, "Macro \"%s\" is not defined.\n", 1},
+    {ERROR_MACRO_RESERVED_WORD, "Macro name \"%s\" is a reserved word.\n", 1},
+    {ERROR_MACRO_INVALID_START, "Macro name \"%s\" must start with an alphabetic character or underscore.\n", 1},
+    {ERROR_MACRO_EMPTY_NAME, "Macro name cannot be empty.\n", 0},
+    {ERROR_MACRO_ALREADY_EXISTS, "Macro named \"%s\" already decleared.\n", 1},
+    {ERROR_MACRO_EXTRA_CONTENT, "Extra content after macro name use.\n", 0},
+    {ERROR_MACRO_DEC_EXTRA_CONTENT, "Extra content after macro declaration.\n", 0},
+    {ERROR_MEMORY_EXCEEDED, "* Memory address exceeded 2^21, only validating input from now on. *\n", 0},
+    {ERROR_ENTRY_EMPTY_NAME, ".entry operand cannot be empty.\n", 0},
+    {ERROR_EXTERN_EMPTY_NAME, ".extern operand cannot be empty.\n", 0},
+    {ERROR_EXTRA_COMMA, "Extra unnecessary comma in instruction or operation line.\n", 0},
+    {ERROR_EXTRA_TEXT, "Extra text after instruction or operation.\n", 0},
+    {ERROR_NO_OPERAND, "Operand is empty.\n", 0}
+
+};
+
 int fill_error_object(ErrorCode code, int line_number, char *extra_word, ErrorObject *error)
 {
     if (!error)
@@ -25,45 +72,6 @@ void handle_system_error(ErrorCode code)
 
 void handle_error(ErrorObject *error)
 {
-    Error errors[SIZEOF_ERRORS_ARRAY] = {
-        {ERROR_MEMORY_ALLOCATION_FAILED, "Memory allocation failed, exiting the program.\n", 0},
-        {ERROR_FILE_NOT_FOUND, "File with filename \"%s\" not found in the file system.\n", 1},
-        {ERROR_FILE_OPEN_FAILED, "Could not create new file.\n", 0},
-        {ERROR_FILE_CLOSE_FAILED, "Could not close the file.\n", 0},
-        {ERROR_LINE_TOO_LONG, "Line exceeds maximum amount of characters %s.\n", 1},
-        {ERROR_LABEL_ALREADY_EXISTS, "Label named \"%s\" already decleared.\n", 1},
-        {ERROR_LABEL_NOT_DEFINED, "Label named \"%s\" is not defined.\n", 1},
-        {ERROR_LABEL_NAME_TOO_LONG, "Label name \"%s\" exceeds maximum amount of 30 characters.\n", 1},
-        {ERROR_LABEL_INVALID_START, "Label name \"%s\" must start with an alphabetic character.\n", 1},
-        {ERROR_LABEL_EMPTY_NAME, "Label name cannot be empty.\n", 0},
-        {ERROR_LABEL_NOT_ALPHANUMERIC, "Label name \"%s\" must contain only alphabetic characters and digits.\n", 1},
-        {ERROR_LABEL_RESERVED_WORD, "Label name \"%s\" is a reserved word.\n", 1},
-        {ERROR_LABEL_IS_MACRO_NAME, "Label name \"%s\" is a macro name.\n", 1},
-        {ERROR_LABEL_EMPTY_LINE, "Label can't be decleared on an empty line\n", 0},
-        {ERROR_LABEL_IS_EXTERNAL, "Label \"%s\" is an external label and cannot be used as an entry.\n", 1},
-        {ERROR_INVALID_OPERATION_TYPE, "Word \"%s\" is not a defined operation / instruction type.\n", 1},
-        {ERROR_INVALID_NUMBER, "One or more of the .data paramters are not valid numbers.\n", 0},
-        {ERROR_INVALID_STRING, "%s is not a valid string.\n", 1},
-        {ERROR_INVALID_OPERAND_TYPE, "\"%s\" is not a valid operand type.\n", 1},
-        {ERROR_INVALID_AMOUNT_OF_OPERANDS, "Invalid amount of operands for operation \"%s\".\n", 1},
-        {ERROR_OPERAND_NOT_ALLOWED, "Invalid operand type for operation \"%s\".\n", 1},
-        {ERROR_MACRO_NAME_TOO_LONG, "Macro name \"%s\" exceeds maximum amount of 30 characters.\n", 1},
-        {ERROR_MACRO_NOT_ALPHANUMERIC, "Macro name \"%s\" must contain only alphabetic characters, digits, and underscores.\n", 1},
-        {ERROR_MACRO_NOT_DEFINED, "Macro \"%s\" is not defined.\n", 1},
-        {ERROR_MACRO_RESERVED_WORD, "Macro name \"%s\" is a reserved word.\n", 1},
-        {ERROR_MACRO_INVALID_START, "Macro name \"%s\" must start with an alphabetic character or underscore.\n", 1},
-        {ERROR_MACRO_EMPTY_NAME, "Macro name cannot be empty.\n", 0},
-        {ERROR_MACRO_ALREADY_EXISTS, "Macro named \"%s\" already decleared.\n", 1},
-        {ERROR_MACRO_EXTRA_CONTENT, "Extra content after macro name use.\n", 0},
-        {ERROR_MACRO_DEC_EXTRA_CONTENT, "Extra content after macro declaration.\n", 0},
-        {ERROR_MEMORY_EXCEEDED, "* Memory address exceeded 2^21, only validating input from now on. *\n", 0},
-        {ERROR_ENTRY_EMPTY_NAME, ".entry operand cannot be empty.\n", 0},
-        {ERROR_EXTERN_EMPTY_NAME, ".extern operand cannot be empty.\n", 0},
-        {ERROR_EXTRA_COMMA, "Extra unnecessary comma in instruction or operation line.\n", 0},
-        {ERROR_EXTRA_TEXT, "Extra text after instruction or operation.\n", 0},
-        {ERROR_NO_OPERAND, "Operand is empty.\n", 0}
-
-    };
     int i;
 
     if (!error || error->code == SUCCESS)

@@ -2,6 +2,7 @@
 #define FALSE 0
 #define ERROR -1
 #define ERROR_NULL_PARAM -2
+#define END_OF_ARRAY -1
 #define NUM_OF_OPERATIONS 16
 #define NUM_OF_REGISTERS 8
 #define MAX_OPERAND_TYPES 4
@@ -16,10 +17,12 @@
 #define OB_EXT ".ob"
 #define ENT_EXT ".ent"
 #define EXT_EXT ".ext"
-#define MACRO_DECLERATION_PREFIX "mcro"
-#define MACRO_DECLERATION_SUFFIX "mcroend"
+#define MACRO_DECLARATION_PREFIX "mcro"
+#define MACRO_DECLARATION_SUFFIX "mcroend"
 #define STRING_INSTRUCTION ".string"
-#define DATA_INSTURCTION ".data"
+#define DATA_INSTRUCTION ".data"
+#define EXTERN_INSTRUCTION ".extern"
+#define ENTRY_INSTRUCTION ".entry"
 #define BASE_10 10
 #define MAX_CODE_LINES 300
 #define MAX_DATA_LINES 300
@@ -35,3 +38,4 @@
 #define E_OFFSET 0
 #define BITS_MASK 16777215
 #define MAX_MEMORY 2097152
+#define REGISTER_NAME_LENGTH 2
