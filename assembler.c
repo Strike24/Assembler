@@ -1,7 +1,5 @@
 #include "assembler.h"
-#define MINIMUM_NUMBER_OF_ARGS 2
-#define FIRST_ADDRESS_FOR_IC 100
-#define FIRST_ADDRESS_FOR_DC 0
+
 int main(int argc, char *argv[])
 {
     int i;

@@ -36,6 +36,7 @@ int second_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, 
 
             if (is_entry_operation(word))
             {
+                /*If line is an entry operation, find the label and set it as entry*/
                 word = strtok(NULL, " \t\n");
                 current_label = find_label(label_list, word);
                 if (current_label == NULL)
@@ -46,6 +47,7 @@ int second_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, 
                 }
                 else if (current_label->type == EXTERNAL)
                 {
+                    /*If label is external it can't be entry*/
                     fill_error_object(ERROR_LABEL_IS_EXTERNAL, line_number, word, &error);
                     handle_error(&error);
                     is_error = TRUE;
@@ -57,6 +59,7 @@ int second_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, 
             }
             else if (is_code_operation(word))
             {
+                /*If line is a code operation, check if there are any direct or relative operands needing to be filled*/
                 word = strtok(NULL, "");
 
                 fill_missing_label_info(code_image, label_list, word, line_number, extern_label_list, &error);
@@ -72,7 +75,10 @@ int second_pass(char *filename, BinaryNode *code_image, BinaryNode *data_image, 
         line_number++;
     }
 
+    /*Align memory to 24 bits and cut off the rest*/
     align_memory_to_bits(code_image, data_image);
+
+    /*If errors were found, do not build the output files.*/
     if (is_error)
     {
         printf("\nErrors found in the assembly process, output files not built.\n");
@@ -101,13 +107,14 @@ int fill_missing_label_info(BinaryNode *code_image, Label *label_list, char *lin
     }
     trim(line);
     word = strtok(line, ",");
-    /*trim(word);*/
 
+    /*loop over all operands in the line*/
     while (word != NULL && i < current_line->num_of_lines)
     {
         current_operand_type = get_operand_type(word);
         if (current_operand_type != RELATIVE && current_operand_type != DIRECT)
         {
+            /*If operand is not relative or direct, skip to next one*/
             word = strtok(NULL, ",");
             i++;
             continue;
@@ -118,6 +125,7 @@ int fill_missing_label_info(BinaryNode *code_image, Label *label_list, char *lin
             word++; /*Skip the &*/
         }
 
+        /*Check if the label is defined*/
         current_label = find_label(label_list, word);
         if (current_label == NULL)
         {
@@ -125,6 +133,7 @@ int fill_missing_label_info(BinaryNode *code_image, Label *label_list, char *lin
             return FAILURE;
         }
 
+        /*If label is external, add it to the extern usage list*/
         if (current_label->type == EXTERNAL)
         {
             /*Add 1 to the address because address of usage is needed and not order of oprand*/
@@ -133,10 +142,12 @@ int fill_missing_label_info(BinaryNode *code_image, Label *label_list, char *lin
 
         if (current_operand_type == RELATIVE)
         {
+            /*Loop over all lines of binary code in the current address*/
             for (j = 0; j < current_line->num_of_lines; j++)
             {
                 if (current_line->code[j] == 0)
                 {
+                    /*If operand is relative, set the code to the label address relative to the current line address*/
                     current_line->code[j] = (current_label->address - current_line->address) << ARE_OFFSET;
                     current_line->code[j] |= 1U << A_OFFSET;
                     break;
@@ -150,158 +161,34 @@ int fill_missing_label_info(BinaryNode *code_image, Label *label_list, char *lin
         }
         else if (current_operand_type == DIRECT)
         {
+            /*Loop over all lines of binary code in the current address*/
             for (j = 0; j < current_line->num_of_lines; j++)
             {
                 if (current_line->code[j] == 0)
                 {
                     if (current_label->type == EXTERNAL)
                     {
+                        /*If label is external, set the E bit to 1*/
                         current_line->code[j] |= 1U << E_OFFSET;
                     }
                     else
                     {
+                        /*If label is not external its relocatable, set the R bit to 1*/
                         current_line->code[j] |= 1U << R_OFFSET;
                     }
 
+                    /*Set the code to the label address*/
                     current_line->code[j] |= (current_label->address) << ARE_OFFSET;
                     break;
                 }
-                /*  else if (i == current_line->num_of_lines - 1)
-                  {
-                      printf("Error: Label address already filled\n");
-                      return ERROR;
-                  }*/
             }
         }
 
         i++;
-        word = strtok(NULL, " \t\n");
+        word = strtok(NULL, " \t\n"); /*Get next operand*/
     }
 
     return SUCCESS;
-}
-
-int build_output_files(char *filename, BinaryNode *code_image, BinaryNode *data_image, Label *label_list, ExternLabel *extern_list, int ICF, int DCF)
-{
-    FILE *ob_file;
-    FILE *ent_file;
-    FILE *ext_file;
-    BinaryNode *current_node = code_image;
-    Label *current_label = label_list;
-    ExternLabel *current_extern_label = extern_list;
-    int is_ent_file = FALSE;
-    int is_ext_file = FALSE;
-
-    if (code_image->next != NULL || data_image->next != NULL)
-    {
-        ob_file = open_file(filename, "w", OB_EXT);
-        if (ob_file == NULL)
-        {
-
-            return ERROR;
-        }
-    }
-
-    while (current_label != NULL)
-    {
-        if (current_label->type == ENTRY)
-        {
-            ent_file = open_file(filename, "w", ENT_EXT);
-            if (ent_file == NULL)
-            {
-                return ERROR;
-            }
-            is_ent_file = TRUE;
-        }
-        else if (current_label->type == EXTERNAL)
-        {
-            ext_file = open_file(filename, "w", EXT_EXT);
-            if (ext_file == NULL)
-            {
-                return ERROR;
-            }
-            is_ext_file = TRUE;
-        }
-        current_label = current_label->next;
-    }
-
-    fprintf(ob_file, "%7d %-6d\n", ICF - 100, DCF);
-    current_node = code_image;
-    while (current_node->next != NULL)
-    {
-        current_node = current_node->next;
-    }
-    while (current_node != code_image)
-    {
-        print_line_ob(ob_file, current_node->line, 0);
-        current_node = current_node->prev;
-    }
-
-    current_node = data_image;
-    while (current_node->next != NULL)
-    {
-        current_node = current_node->next;
-    }
-    while (current_node != data_image)
-    {
-        print_line_ob(ob_file, current_node->line, ICF);
-        current_node = current_node->prev;
-    }
-    fclose(ob_file);
-
-    current_label = label_list;
-    if (is_ent_file && current_label != NULL)
-    {
-        while (current_label->next != NULL)
-        {
-            current_label = current_label->next;
-        }
-        while (current_label != label_list)
-        {
-
-            if (current_label->type == ENTRY)
-            {
-                fprintf(ent_file, "%s %07d\n", current_label->name, current_label->address);
-            }
-            current_label = current_label->prev;
-        }
-        fclose(ent_file);
-    }
-
-    current_extern_label = extern_list;
-    if (is_ext_file)
-    {
-        while (current_extern_label->next != NULL)
-        {
-            current_extern_label = current_extern_label->next;
-        }
-        while (current_extern_label != extern_list)
-        {
-            if (current_extern_label->usage_address != 0 && current_extern_label->label->name != NULL)
-            {
-                fprintf(ext_file, "%s %07d\n", current_extern_label->label->name, current_extern_label->usage_address);
-            }
-            current_extern_label = current_extern_label->prev;
-        }
-        fclose(ext_file);
-    }
-
-    printf("* No errors found in the assembly process, output files built. *\n");
-    return 0;
-}
-
-int print_line_ob(FILE *ob_file, BinaryLine *current_node, int starting_index)
-{
-    int i = 0;
-    if (current_node == NULL)
-    {
-        return ERROR;
-    }
-    for (i = 0; i < current_node->num_of_lines; i++)
-    {
-        fprintf(ob_file, "%07d %06x\n", current_node->address + i + starting_index, current_node->code[i]);
-    }
-    return 0;
 }
 
 int align_memory_to_bits(BinaryNode *code_image, BinaryNode *data_image)
@@ -314,14 +201,20 @@ int align_memory_to_bits(BinaryNode *code_image, BinaryNode *data_image)
     {
         return ERROR;
     }
+
+    /*Loops over every binary line in the code image*/
     while (current_node->next != NULL)
     {
         if (current_node->line == NULL)
         {
+            /*If line is NULL, skip to next one*/
             current_node = current_node->next;
             continue;
         }
+
         current_line = current_node->line;
+        /*Loops over every line of binary code in the current address and masks it.
+        This will turn of every bit after the 23rd bit*/
         for (i = 0; i < current_line->num_of_lines; i++)
         {
             current_line->code[i] &= BITS_MASK;
@@ -334,12 +227,14 @@ int align_memory_to_bits(BinaryNode *code_image, BinaryNode *data_image)
     {
         if (current_node->line == NULL)
         {
+            /*If line is NULL, skip to next one*/
             current_node = current_node->next;
             continue;
         }
         current_line = current_node->line;
         for (i = 0; i < current_line->num_of_lines; i++)
         {
+            /*Loops over every line of binary code in the current address and masks it.*/
             current_line->code[i] &= BITS_MASK;
         }
         current_node = current_node->next;
