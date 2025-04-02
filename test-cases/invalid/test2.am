@@ -1,8 +1,10 @@
-; Invalid test case #2, label names and data
+; Invalid test case #2, label names, instructions, operations
 HEAD: .string "coded-in-24-bit-memory"
       bne SKIP
       lea HEAD, #32
       .string "this-string-is-too-long-for-the-assembler-and-is-bigger-than-81-chars"
+      .data notanumber, 5
+      .string 5
 NUMBER: .data 115
 EXIT: stop r5
       .data 7,25

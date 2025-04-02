@@ -8,13 +8,19 @@ ERROR in line 4:
 ERROR in line 5:
 	Line exceeds maximum amount of characters 80.
 
+ERROR in line 6:
+	One or more of the .data paramters are not valid numbers.
+
 ERROR in line 7:
+	5 is not a valid string.
+
+ERROR in line 9:
 	Invalid amount of operands for operation "stop".
 
-ERROR in line 10:
+ERROR in line 12:
 	Label name "lea" is a reserved word.
 
-ERROR in line 11:
+ERROR in line 13:
 	Label name "THISLABELNAMEISTOOLONGANDEXCEEDSMAX" exceeds maximum amount of 30 characters.
 
 ERROR in line 3:
