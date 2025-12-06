@@ -3,6 +3,8 @@
 ### Project Overview
 This project is a complete Assembler in ANSI C for a hypothetical 12-bit CPU architecture. The program takes a raw assembly source file (.as), processes it, and outputs the binary machine code (.ob) along with memory maps for external and entry symbols.
 
+[Project Writeup in a PDF Format](https://s3.us-east-1.amazonaws.com/pub-cdn-us.apitemplate.io/2025/12/bd970fa3-4ba8-4435-8cff-9a928ae9c628.pdf?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIA6ENCBKJYLWJUD36X%2F20251206%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20251206T153116Z&X-Amz-Expires=7200&X-Amz-Signature=7f5fa2ce63b5ee69a447db8f05ef5eaa9c3f41622f670d9972a3d241c27182c6&X-Amz-SignedHeaders=host&x-amz-checksum-mode=ENABLED&x-id=GetObject) (Or you can just read it below in markdown)
+
 ## How it works - System Architecture 🛠️
 The assembler works with a Two-Pass Algorithem to handle translation process.
 1. **Pre-Processor** 🟠
